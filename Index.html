@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14203a">
+<title>푸로찜 발주·명세표</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<style>
+  :root{
+    --navy:#14203a; --navy2:#1f3358; --ink:#16202e; --sub:#6b7a90;
+    --line:#e3e8ef; --bg:#f4f6fa; --card:#ffffff;
+    --accent:#2563eb; --accent2:#1d4ed8; --ok:#0f9d58; --warn:#e8890c; --bad:#d93025;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    background:var(--bg); color:var(--ink); font-size:15px; line-height:1.5;
+    padding-bottom:98px; overflow-x:hidden;
+  }
+  header{
+    position:sticky; top:0; z-index:30;
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+    color:#fff; padding:14px 16px 0;
+    box-shadow:0 2px 12px rgba(16,32,64,.16);
+  }
+  .brand{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .logo{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.14);
+    display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden}
+  .logo img{width:100%;height:100%;object-fit:cover}
+  .brand h1{font-size:16px;margin:0;font-weight:700;letter-spacing:-.3px}
+  .brand .env{margin-left:auto;font-size:11px;opacity:.72;text-align:right;line-height:1.3}
+  .tabs{display:flex;gap:6px}
+  .tab{
+    flex:1;border:0;background:transparent;color:rgba(255,255,255,.62);
+    padding:11px 6px 13px;font-size:14px;font-weight:600;font-family:inherit;
+    border-bottom:3px solid transparent;cursor:pointer;transition:.18s;
+  }
+  .tab.on{color:#fff;border-bottom-color:#7ea8ff}
+  main{padding:14px 14px 0;max-width:720px;margin:0 auto}
+  .panel{display:none} .panel.on{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(16,32,64,.04)}
+  .card h2{font-size:13px;margin:0 0 10px;color:var(--sub);font-weight:700;letter-spacing:.2px;
+    display:flex;align-items:center;gap:7px}
+  .card h2 .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .mini{font-size:12px;color:var(--sub);line-height:1.45}
+  .row{display:flex;gap:8px;align-items:center}
+  .row.wrap{flex-wrap:wrap}
+  .grow{flex:1;min-width:0}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;
+    background:#eef2f9;color:#40506a;white-space:nowrap}
+  .pill.ok{background:#e8f5ec;color:#0f7a45}
+  .pill.warn{background:#fdf1e0;color:#a8630a}
+  .pill.bad{background:#fdeceb;color:#b3261e}
+  .pill.blue{background:#e8effd;color:#1d4ed8}
+  button{font-family:inherit}
+  .btn{
+    border:0;border-radius:11px;padding:13px 14px;font-size:14px;font-weight:700;
+    background:var(--accent);color:#fff;cursor:pointer;transition:.15s;width:100%;
+  }
+  .btn:active{transform:scale(.985)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn.dark{background:var(--navy)}
+  .btn.ok{background:var(--ok)}
+  .btn.sm{padding:9px 12px;font-size:13px;border-radius:9px;width:auto}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .listItem{
+    border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px;
+    display:flex;gap:10px;align-items:flex-start;background:#fff;cursor:pointer;transition:.15s;
+  }
+  .listItem.sel{border-color:var(--accent);background:#f6f9ff;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+  .listItem .chk{
+    width:20px;height:20px;border-radius:6px;border:2px solid #c7d2e0;flex:0 0 auto;margin-top:1px;
+    display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:#fff;
+  }
+  .listItem.sel .chk{background:var(--accent);border-color:var(--accent)}
+  .liTop{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .liTitle{font-size:14px;font-weight:700;letter-spacing:-.2px;word-break:break-all}
+  .liMeta{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.5}
+  .liMeta b{color:#33425c;font-weight:600}
+  .empty{text-align:center;padding:26px 10px;color:var(--sub);font-size:13px}
+  .empty .ico{font-size:26px;display:block;margin-bottom:6px;opacity:.5}
+  .field{margin-bottom:9px}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:var(--sub);margin-bottom:4px}
+  input[type=text],input[type=email],input[type=date],input[type=number],input[type=url],input[type=password],textarea{
+    width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+    font-size:14px;font-family:inherit;background:#fbfcfe;color:var(--ink);outline:none;
+  }
+  input:focus,textarea:focus{border-color:var(--accent);background:#fff}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .bookRow{display:grid;grid-template-columns:1.1fr 1.6fr .9fr 32px;gap:6px;margin-bottom:6px}
+  .bookRow input{padding:9px 8px;font-size:12.5px}
+  .delBtn{border:1px solid var(--line);background:#fff;color:#b3261e;border-radius:8px;
+    font-size:14px;cursor:pointer;padding:0}
+  .bar{
+    position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255,255,.97);
+    border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    display:flex;gap:8px;max-width:720px;margin:0 auto;backdrop-filter:blur(8px);
+  }
+  .bar .btn{flex:1}
+  .bar .btn.sm{flex:0 0 auto;width:auto}
+  .modalBg{
+    position:fixed;inset:0;background:rgba(12,20,34,.55);z-index:100;display:none;
+    align-items:flex-end;justify-content:center;padding:0;
+  }
+  .modalBg.on{display:flex}
+  .modal{
+    background:#fff;width:100%;max-width:720px;max-height:92vh;border-radius:18px 18px 0 0;
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .modalHead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .modalHead h3{font-size:15px;margin:0;flex:1}
+  .modalBody{overflow:auto;padding:14px 16px 22px;-webkit-overflow-scrolling:touch}
+  .xBtn{border:0;background:#eef2f8;border-radius:50%;width:30px;height:30px;font-size:15px;color:#46566e;cursor:pointer}
+  .toast{
+    position:fixed;left:50%;bottom:112px;transform:translate(-50%,14px);z-index:200;
+    background:rgba(20,32,58,.95);color:#fff;padding:11px 16px;border-radius:22px;
+    font-size:13px;max-width:88vw;opacity:0;pointer-events:none;transition:.24s;text-align:center;
+  }
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .load{
+    position:fixed;inset:0;background:rgba(255,255,255,.82);z-index:150;display:none;
+    align-items:center;justify-content:center;flex-direction:column;gap:12px;backdrop-filter:blur(2px);
+  }
+  .load.on{display:flex}
+  .spin{width:34px;height:34px;border:3px solid #dbe4f0;border-top-color:var(--accent);
+    border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .loadTxt{font-size:13px;color:var(--sub);font-weight:600}
+  .pdfFrame{width:100%;height:64vh;border:1px solid var(--line);border-radius:10px;background:#f0f2f6}
+  .kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .kv:last-child{border-bottom:0}
+  .kv span:first-child{color:var(--sub);flex:0 0 auto}
+  .kv span:last-child{font-weight:700;text-align:right;word-break:break-all}
+  .secTitle{font-size:12px;font-weight:800;color:var(--navy);margin:16px 0 8px;letter-spacing:.3px}
+  .secTitle:first-child{margin-top:0}
+  .manual h4{font-size:13.5px;margin:16px 0 6px;color:var(--navy)}
+  .manual p,.manual li{font-size:13px;line-height:1.68;color:#3a475c}
+  .manual ul{padding-left:18px;margin:6px 0}
+  .manual code{background:#eef2f8;padding:1px 5px;border-radius:5px;font-size:12px;color:#1d4ed8}
+  .manual table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+  .manual th,.manual td{border:1px solid var(--line);padding:6px 7px;text-align:left;vertical-align:top}
+  .manual th{background:#f4f6fa;font-weight:700;color:var(--navy)}
+  .notice{background:#f6f9ff;border:1px solid #dbe6fb;border-radius:10px;padding:10px 11px;
+    font-size:12px;color:#2a4b8d;line-height:1.55}
+  .warnBox{background:#fffaf1;border:1px solid #f6e3c3;border-radius:10px;padding:10px 11px;
+    font-size:12px;color:#8a5a12;line-height:1.55}
+  .badBox{background:#fdeceb;border:1px solid #f7cdc9;border-radius:10px;padding:10px 11px;
+    font-size:12px;color:#8e2418;line-height:1.55}
+  .sw{display:flex;align-items:center;gap:10px;padding:10px 0}
+  .sw input{width:auto;transform:scale(1.15);margin:0}
+  .sw .t{font-size:13.5px;font-weight:600}
+  .sw .d{font-size:11.5px;color:var(--sub)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo" id="logoBox">📦</div>
+    <h1 id="appTitle">푸로찜 발주·명세표</h1>
+    <div class="env" id="envLine">연결 확인 중…</div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-tab="po">발주서</button>
+    <button class="tab" data-tab="stmt">거래명세표</button>
+    <button class="tab" data-tab="set">설정</button>
+  </div>
+</header>
+
+<main>
+  <!-- ================= 발주서 ================= -->
+  <section class="panel on" id="p-po">
+    <div class="card">
+      <h2><span class="dot"></span>발주 대상 <span class="pill" id="poCount">0건</span></h2>
+      <div class="mini" style="margin-bottom:10px">
+        노션 조건 · <b>발주=체크</b> + <b>발주관리번호=비어있음</b> + <b>출고여부≠True</b> + <b>발주서발송여부≠체크</b>
+      </div>
+      <div id="poList"><div class="empty"><span class="ico">⏳</span>불러오는 중…</div></div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn ghost sm" onclick="reloadPo()">↻ 새로고침</button>
+        <button class="btn ghost sm" onclick="selAll('po')">전체 선택</button>
+        <button class="btn ghost sm" onclick="selNone('po')">선택 해제</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 거래명세표 ================= -->
+  <section class="panel" id="p-stmt">
+    <div class="card">
+      <h2><span class="dot"></span>명세표 대상 <span class="pill" id="stmtCount">0건</span></h2>
+      <div class="mini" style="margin-bottom:10px">
+        노션 조건 · <b>명세표발행=체크</b> + <b>명세표발송여부=미체크</b> + <b>거래처발송대기=미체크</b> + <b>출고여부=True</b><br>
+        같은 거래처 건은 1장의 명세표로 묶입니다. (최대 4줄)
+      </div>
+      <div id="stmtList"><div class="empty"><span class="ico">⏳</span>불러오는 중…</div></div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn ghost sm" onclick="reloadStmt()">↻ 새로고침</button>
+        <button class="btn ghost sm" onclick="selAll('stmt')">전체 선택</button>
+        <button class="btn ghost sm" onclick="selNone('stmt')">선택 해제</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 설정 ================= -->
+  <section class="panel" id="p-set">
+    <div class="card">
+      <h2><span class="dot"></span>서버 연결 (Google Apps Script)</h2>
+      <div class="field">
+        <label>웹앱 배포 URL (/exec)</label>
+        <input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/AKfycbwAKzJJXLDNYlGb0YYDqOiR9wEV99fltWCh_pzqLImDoV7QevNI5E-sQJ5U5-HEGzBg/exec">
+      </div>
+      <div class="field">
+        <label>API KEY (GAS 스크립트 속성에 넣은 경우에만)</label>
+        <input type="password" id="gasKey" placeholder="비워두면 사용 안 함">
+      </div>
+      <div class="row wrap" style="margin-bottom:8px">
+        <button class="btn dark sm" onclick="saveConn()">연결 저장</button>
+        <button class="btn ghost sm" onclick="pingServer()">연결 테스트</button>
+      </div>
+      <div class="notice">이 값은 <b>이 브라우저에만</b> 저장됩니다(localStorage). 다른 기기에서는 한 번 더 입력하세요.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>관리번호 (중앙 발급소)</h2>
+      <div class="grid2">
+        <div class="field"><label>발주 – 연도 (Config A1)</label><input type="number" id="cfgPoYear"></div>
+        <div class="field"><label>발주 – 마지막순번 (Config B1)</label><input type="number" id="cfgPoSeq"></div>
+        <div class="field"><label>명세표 – 날짜 (STMT_Config A2)</label><input type="text" id="cfgStmtDate" placeholder="YYYYMMDD"></div>
+        <div class="field"><label>명세표 – 마지막순번 (STMT_Config B2)</label><input type="number" id="cfgStmtSeq"></div>
+      </div>
+      <div class="notice">미리보기는 번호를 <b>소비하지 않습니다</b>. 실제 <b>메일 발송</b> 시점에만 번호가 발급·기록됩니다.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>AddressBook <span class="pill" id="bookCount">0</span></h2>
+      <div class="mini" style="margin-bottom:8px">A열: 제2배송지 거래처 / B열: 상세주소 / C열: 연락처</div>
+      <div class="bookRow" style="font-size:10.5px;font-weight:700;color:var(--sub);margin-bottom:3px">
+        <div>거래처</div><div>상세주소</div><div>연락처</div><div></div>
+      </div>
+      <div id="bookBody"></div>
+      <button class="btn ghost sm" style="margin-top:6px" onclick="addBookRow()">+ 행 추가</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>기존 시트 연동</h2>
+      <div id="legacyInfo" class="mini" style="margin-bottom:10px">–</div>
+      <div class="row wrap">
+        <button class="btn ghost sm" onclick="pullLegacy()">↓ 기존 시트 값 읽어오기</button>
+        <button class="btn dark sm" onclick="pushLegacy()">↑ 기존 시트로 내보내기</button>
+      </div>
+      <div class="warnBox" style="margin-top:10px">
+        내보내기는 기존 시트의 <b>AddressBook(A:C)</b>, <b>발주서 Config(A1:B1)</b>, <b>명세표 Config(A2:B2)</b> 만 덮어씁니다.
+        PO_Template · Log · WaitingLog · PendingClientMail 등 나머지 시트는 <b>건드리지 않습니다.</b>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>저장</h2>
+      <button class="btn" onclick="saveSettings()">설정 저장 + 기존 시트 반영</button>
+    </div>
+  </section>
+</main>
+
+<!-- 하단 액션바 -->
+<div class="bar" id="bar">
+  <button class="btn ghost sm" id="btnManual" onclick="openManual()">📘 매뉴얼</button>
+  <button class="btn ghost" id="btnPreview" onclick="doPreview()">미리보기</button>
+  <button class="btn" id="btnSend" onclick="doSend()">메일 발송</button>
+</div>
+
+<div class="modalBg" id="mBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modalHead"><h3 id="mTitle">제목</h3><button class="xBtn" onclick="closeModal()">✕</button></div>
+    <div class="modalBody" id="mBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="load" id="load"><div class="spin"></div><div class="loadTxt" id="loadTxt">처리 중…</div></div>
+<script>
+/* =====================================================================
+ * 푸로찜 웹앱 Index  v2.0  (GitHub Pages 용)
+ * ---------------------------------------------------------------------
+ *  · google.script.run 은 HtmlService 안에서만 동작하므로 사용하지 않습니다.
+ *  · GAS 웹앱(/exec)에 fetch POST + Content-Type: text/plain 으로 호출합니다.
+ *    (text/plain 은 CORS preflight 를 발생시키지 않아 GitHub Pages 에서 바로 됩니다)
+ *  · 실패하면 JSONP(doGet?callback=) 로 자동 재시도합니다.
+ *  · 서버 주소/API KEY 는 localStorage 에만 저장됩니다.
+ * ===================================================================== */
+
+var LS_URL = 'prozyme_gas_url';
+var LS_KEY = 'prozyme_api_key';
+
+var S = {
+  tab: 'po',
+  state: null,
+  po: [],
+  stmt: [],
+  selPo: {},
+  selStmt: {},
+  book: [],
+  lastPo: null,
+  lastStmt: null,
+  gasUrl: '',
+  apiKey: ''
+};
+
+/* ---------- 공통 ---------- */
+function $(id){ return document.getElementById(id); }
+function toast(msg, ms){
+  var t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('on'); }, ms || 2600);
+}
+function loading(on, txt){ $('loadTxt').textContent = txt || '처리 중…'; $('load').classList.toggle('on', !!on); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function comma(n){ var v = Number(n || 0); return v.toLocaleString('ko-KR'); }
+function openModal(title, html){
+  $('mTitle').textContent = title; $('mBody').innerHTML = html; $('mBg').classList.add('on');
+  $('mBody').scrollTop = 0;
+}
+function closeModal(){ $('mBg').classList.remove('on'); }
+
+/* ---------- 서버 통신 ---------- */
+function loadConn(){
+  try {
+    S.gasUrl = (localStorage.getItem(LS_URL) || '').trim();
+    S.apiKey = (localStorage.getItem(LS_KEY) || '').trim();
+  } catch (e) { S.gasUrl = ''; S.apiKey = ''; }
+  $('gasUrl').value = S.gasUrl;
+  $('gasKey').value = S.apiKey;
+}
+
+function saveConn(){
+  S.gasUrl = $('gasUrl').value.trim();
+  S.apiKey = $('gasKey').value.trim();
+  try {
+    localStorage.setItem(LS_URL, S.gasUrl);
+    localStorage.setItem(LS_KEY, S.apiKey);
+  } catch (e) {}
+  toast(S.gasUrl ? '연결 정보를 저장했습니다.' : '주소를 입력해 주세요.');
+  loadState();
+}
+
+function api(action, extra, cb){
+  if (!S.gasUrl) {
+    toast('먼저 「설정」에서 GAS 웹앱 URL 을 입력해 주세요.', 4200);
+    if (cb) cb({ ok: false, error: 'GAS URL 미설정' });
+    return;
+  }
+
+  var body = Object.assign({ action: action, key: S.apiKey }, extra || {});
+
+  fetch(S.gasUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body),
+    redirect: 'follow'
+  })
+  .then(function(r){ return r.text(); })
+  .then(function(txt){
+    var data;
+    try { data = JSON.parse(txt); }
+    catch (e) { throw new Error('서버 응답 해석 실패: ' + String(txt).slice(0, 120)); }
+    if (cb) cb(data);
+  })
+  .catch(function(err){
+    /* CORS/네트워크 문제 → JSONP 로 한 번 더 시도 */
+    jsonp(action, body, function(data){
+      if (data) { if (cb) cb(data); }
+      else { if (cb) cb({ ok: false, error: '연결 실패: ' + err.message }); }
+    });
+  });
+}
+
+function jsonp(action, body, cb){
+  var name = '_cb' + Math.random().toString(36).slice(2);
+  var timer = setTimeout(function(){ cleanup(); cb(null); }, 20000);
+
+  window[name] = function(data){ clearTimeout(timer); cleanup(); cb(data); };
+
+  function cleanup(){
+    try { delete window[name]; } catch (e) { window[name] = undefined; }
+    var el = $('jsonp_' + name);
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  var q = '?action=' + encodeURIComponent(action)
+        + '&key=' + encodeURIComponent(body.key || '')
+        + '&payload=' + encodeURIComponent(JSON.stringify(body))
+        + '&callback=' + name;
+
+  var sc = document.createElement('script');
+  sc.id = 'jsonp_' + name;
+  sc.src = S.gasUrl + q;
+  sc.onerror = function(){ clearTimeout(timer); cleanup(); cb(null); };
+  document.body.appendChild(sc);
+}
+
+/* ---------- 탭 ---------- */
+Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){
+  b.onclick = function(){
+    var t = b.getAttribute('data-tab');
+    S.tab = t;
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(x){ x.classList.toggle('on', x === b); });
+    Array.prototype.forEach.call(document.querySelectorAll('.panel'), function(x){ x.classList.remove('on'); });
+    $('p-' + t).classList.add('on');
+    if (t === 'set') fillSettings();
+    updateBar();
+  };
+});
+
+function updateBar(){
+  var bar = $('bar');
+  if (S.tab === 'set') { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  var n = (S.tab === 'po') ? Object.keys(S.selPo).length : Object.keys(S.selStmt).length;
+  $('btnPreview').disabled = n === 0;
+  $('btnSend').disabled = n === 0;
+  $('btnPreview').textContent = n ? ('미리보기 (' + n + ')') : '미리보기';
+  $('btnSend').textContent = n ? ('메일 발송 (' + n + ')') : '메일 발송';
+}
+
+/* ---------- 상태 ---------- */
+function loadState(){
+  if (!S.gasUrl) { $('envLine').textContent = '설정에서 서버 연결'; return; }
+  api('getState', {}, function(r){
+    if (!r || !r.ok) { $('envLine').innerHTML = '⚠ 연결 실패'; toast('설정 로드 실패: ' + (r && r.error || ''), 4200); return; }
+    S.state = r;
+    $('appTitle').textContent = r.appTitle || '푸로찜 발주·명세표';
+    $('envLine').innerHTML = (r.hasPoTemplate ? '' : '⚠ PO_Template 없음<br>')
+      + (r.hasStmtTemplate ? '' : '⚠ STMT_Template 없음<br>')
+      + (r.legacyLinked ? '기존시트 연동' : '기존시트 미설정');
+    S.book = r.addressBook || [];
+    fillSettings();
+    renderBook();
+  });
+}
+
+/* ---------- 발주서 ---------- */
+function reloadPo(){
+  $('poList').innerHTML = '<div class="empty"><span class="ico">⏳</span>불러오는 중…</div>';
+  api('listPo', {}, function(r){
+    if (!r || !r.ok) { $('poList').innerHTML = '<div class="empty"><span class="ico">⚠</span>' + esc(r && r.error) + '</div>'; return; }
+    S.po = r.rows || [];
+    S.selPo = {};
+    renderPo();
+  });
+}
+
+function renderPo(){
+  var h = '';
+  if (!S.po.length) {
+    h = '<div class="empty"><span class="ico">📭</span>발주 대상이 없습니다.<br><span class="mini">노션에서 「발주」 체크 후 새로고침</span></div>';
+  }
+  S.po.forEach(function(it, i){
+    var on = !!S.selPo[it.pageId];
+    h += '<div class="listItem' + (on ? ' sel' : '') + '" onclick="togglePo(' + i + ')">'
+      +  '<div class="chk">' + (on ? '✓' : '') + '</div>'
+      +  '<div class="grow">'
+      +    '<div class="liTop"><span class="liTitle">' + esc(it.product || it.title || '(제품명 없음)') + '</span>'
+      +      '<span class="pill blue">' + esc(it.spec || '-') + '</span></div>'
+      +    '<div class="liMeta">수량 <b>' + comma(it.qty) + '</b>'
+      +      (it.dueDate ? ' · 납품요청 <b>' + esc(it.dueDate) + '</b>' : ' · <span style="color:#b3261e">납품요청일 없음</span>')
+      +      (it.site ? '<br>배송지 <b>' + esc(it.site) + '</b>' : '')
+      +      (it.memo ? '<br>비고 ' + esc(it.memo) : '')
+      +    '</div>'
+      +  '</div></div>';
+  });
+  $('poList').innerHTML = h;
+  $('poCount').textContent = S.po.length + '건';
+  updateBar();
+}
+function togglePo(i){
+  var id = S.po[i].pageId;
+  if (S.selPo[id]) delete S.selPo[id]; else S.selPo[id] = 1;
+  renderPo();
+}
+
+/* ---------- 거래명세표 ---------- */
+function reloadStmt(){
+  $('stmtList').innerHTML = '<div class="empty"><span class="ico">⏳</span>불러오는 중…</div>';
+  api('listStmt', {}, function(r){
+    if (!r || !r.ok) { $('stmtList').innerHTML = '<div class="empty"><span class="ico">⚠</span>' + esc(r && r.error) + '</div>'; return; }
+    S.stmt = r.groups || [];
+    S.selStmt = {};
+    renderStmt();
+  });
+}
+
+function renderStmt(){
+  var h = '';
+  if (!S.stmt.length) {
+    h = '<div class="empty"><span class="ico">📭</span>명세표 대상이 없습니다.<br><span class="mini">노션에서 「명세표발행」 체크 후 새로고침</span></div>';
+  }
+  S.stmt.forEach(function(g, i){
+    var on = !!S.selStmt[g.key];
+    var mailPill = (g.emails && g.emails.length)
+      ? '<span class="pill ok">거래처 메일 ' + g.emails.length + '</span>'
+      : '<span class="pill warn">메일 없음</span>';
+    h += '<div class="listItem' + (on ? ' sel' : '') + '" onclick="toggleStmt(' + i + ')">'
+      +  '<div class="chk">' + (on ? '✓' : '') + '</div>'
+      +  '<div class="grow">'
+      +    '<div class="liTop"><span class="liTitle">' + esc(g.clientName) + '</span>' + mailPill + '</div>'
+      +    '<div class="liMeta">납품일자 <b>' + esc(g.deliveryDate || '미입력') + '</b> · 품목 <b>' + g.pages.length + '</b>건'
+      +      ' · 수량 <b>' + comma(g.totalQty) + '</b> · 금액 <b>' + comma(g.totalAmount) + '</b>원'
+      +      '<br>' + g.pages.map(function(p){ return esc(p.spec || '-') + '×' + comma(p.qty); }).join(' / ')
+      +      (g.memo ? '<br><span style="color:#a8630a">' + esc(g.memo) + '</span>' : '')
+      +    '</div>'
+      +  '</div></div>';
+  });
+  $('stmtList').innerHTML = h;
+  $('stmtCount').textContent = S.stmt.length + '건';
+  updateBar();
+}
+function toggleStmt(i){
+  var k = S.stmt[i].key;
+  if (S.selStmt[k]) delete S.selStmt[k]; else S.selStmt[k] = 1;
+  renderStmt();
+}
+
+function selAll(which){
+  if (which === 'po') { S.po.forEach(function(x){ S.selPo[x.pageId] = 1; }); renderPo(); }
+  else { S.stmt.forEach(function(x){ S.selStmt[x.key] = 1; }); renderStmt(); }
+}
+function selNone(which){
+  if (which === 'po') { S.selPo = {}; renderPo(); }
+  else { S.selStmt = {}; renderStmt(); }
+}
+
+/* ---------- PDF 뷰어 ---------- */
+function pdfModal(title, base64, fileName, infoHtml){
+  var bin = atob(base64), arr = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  var blob = new Blob([arr], { type: 'application/pdf' });
+  var url = URL.createObjectURL(blob);
+  S._pdfUrl = url;
+  var html = ''
+    + '<div class="row" style="gap:8px;margin-bottom:10px">'
+    +   '<button class="btn dark sm" onclick="dlPdf(\'' + esc(fileName) + '\')">⬇ PDF 저장</button>'
+    +   '<button class="btn ghost sm" onclick="window.open(S._pdfUrl,\'_blank\')">↗ 새창 열기</button>'
+    + '</div>'
+    + '<iframe class="pdfFrame" src="' + url + '"></iframe>'
+    + (infoHtml || '');
+  openModal(title, html);
+}
+function dlPdf(name){
+  var a = document.createElement('a');
+  a.href = S._pdfUrl; a.download = name || 'document.pdf';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+/* ---------- 미리보기 ---------- */
+function doPreview(){ if (S.tab === 'po') previewPo(); else previewStmt(); }
+
+function previewPo(){
+  var ids = Object.keys(S.selPo);
+  if (!ids.length) { toast('대상을 선택해 주세요.'); return; }
+  loading(true, '발주서 PDF 생성 중…');
+  api('previewPo', { ids: ids }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 4500); return; }
+    S.lastPo = r;
+    var info = '<div class="secTitle">발주서 정보</div>'
+      + '<div class="kv"><span>발주번호</span><span>' + esc(r.orderNo) + '</span></div>'
+      + '<div class="kv"><span>납품희망일</span><span>' + esc(r.formattedDate) + '</span></div>'
+      + '<div class="kv"><span>배송지</span><span>' + esc(r.clientName || '-') + '</span></div>'
+      + '<div class="kv"><span>품목 / 수량</span><span>' + r.count + '건 / ' + comma(r.qty) + '</span></div>'
+      + '<div class="kv"><span>총량(KG)</span><span>' + comma(r.totalKg) + '</span></div>'
+      + '<div class="warnBox" style="margin-top:12px">이 번호는 아직 <b>기록되지 않았습니다.</b> 메일 발송 시 확정됩니다.</div>';
+    pdfModal('발주서 미리보기', r.base64, r.fileName, info);
+  });
+}
+
+function previewStmt(){
+  var keys = Object.keys(S.selStmt);
+  if (!keys.length) { toast('대상을 선택해 주세요.'); return; }
+  var ids = [];
+  S.stmt.forEach(function(g){ if (S.selStmt[g.key]) g.pages.forEach(function(p){ ids.push(p.pageId); }); });
+  loading(true, '거래명세표 PDF 생성 중…');
+  api('previewStmt', { ids: ids }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 4500); return; }
+    S.lastStmt = r;
+    var info = '<div class="secTitle">명세표 정보</div>'
+      + '<div class="kv"><span>관리번호</span><span>' + esc(r.manageNo) + '</span></div>'
+      + '<div class="kv"><span>거래처</span><span>' + esc(r.clientName) + '</span></div>'
+      + '<div class="kv"><span>납품일자</span><span>' + esc(r.deliveryDate) + '</span></div>'
+      + '<div class="kv"><span>수량 / 금액</span><span>' + comma(r.totalQty) + ' / ' + comma(r.totalAmount) + '원</span></div>'
+      + '<div class="kv"><span>거래처 메일</span><span>' + (r.emails && r.emails.length ? esc(r.emails.join(', ')) : '<span style="color:#b3261e">없음</span>') + '</span></div>'
+      + '<div class="warnBox" style="margin-top:12px">이 번호는 아직 <b>기록되지 않았습니다.</b> 메일 발송 시 확정됩니다.</div>';
+    pdfModal('거래명세표 미리보기', r.base64, r.fileName, info);
+  });
+}
+
+/* ---------- 발송 ---------- */
+function doSend(){ if (S.tab === 'po') sendPo(); else sendStmt(); }
+
+function sendPo(){
+  var ids = Object.keys(S.selPo);
+  if (!ids.length) { toast('대상을 선택해 주세요.'); return; }
+
+  var orderNo = '';
+  var subject = '';
+  if (S.lastPo && sameSet(ids, S.lastPo.pageIds)) {
+    orderNo = S.lastPo.orderNo;
+    subject = '[푸로찜총판] 납품발주 요청 건 (납품희망일:' + (S.lastPo.formattedDate || '') + ')';
+  }
+
+  var html = ''
+    + '<div class="secTitle">받는 사람</div>'
+    + '<div class="field"><label>수신 이메일 (콤마로 여러 개)</label>'
+    +   '<input type="email" id="poTo" value="' + esc(S.state && S.state.hqEmail || '') + '"></div>'
+    + '<div class="field"><label>참조(CC) — 없으면 비워두세요</label>'
+    +   '<input type="text" id="poCc" value=""></div>'
+    + '<div class="notice">발송하면 노션에서 <b>발주 ✘</b> / <b>발주서발송여부 ✔</b> / <b>발주관리번호 기록</b> 으로 '
+    + '기존 자동화와 <b>완전히 동일하게</b> 마감되어 이중발송이 차단됩니다.</div>'
+    + '<div class="secTitle">메일 내용</div>'
+    + '<div class="field"><label>제목</label><input type="text" id="poSubject" value="' + esc(subject) + '"></div>'
+    + '<div class="field"><label>본문</label><textarea id="poBody" rows="4">안녕하세요 푸로찜 총판입니다.\n\n첨부와 같이 발주 요청드립니다.\n\n감사합니다.</textarea></div>'
+    + '<button class="btn" style="margin-top:12px" onclick="confirmSendPo(\'' + esc(orderNo) + '\')">지금 발송</button>';
+  openModal('발주서 메일 발송', html);
+}
+
+function confirmSendPo(orderNo){
+  var to = $('poTo').value.trim();
+  if (!to) { toast('받는 사람을 입력해 주세요.'); return; }
+  var opts = { to: to, cc: $('poCc').value.trim(), subject: $('poSubject').value.trim(), body: $('poBody').value };
+  var ids = Object.keys(S.selPo);
+  closeModal();
+  loading(true, '발주서 발송 중…');
+  api('sendPo', { ids: ids, orderNo: orderNo || '', opts: opts }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5500); return; }
+    S.lastPo = null;
+    openModal('발송 완료', ''
+      + '<div class="kv"><span>발주번호</span><span>' + esc(r.orderNo) + '</span></div>'
+      + '<div class="kv"><span>수신</span><span>' + esc(r.to) + '</span></div>'
+      + '<div class="kv"><span>건수</span><span>' + r.count + '건</span></div>'
+      + '<div class="notice" style="margin-top:12px">노션 상태가 갱신되었습니다. 새로고침으로 목록에서 사라졌는지 확인하세요.</div>');
+    reloadPo();
+  });
+}
+
+function sendStmt(){
+  var keys = Object.keys(S.selStmt);
+  if (!keys.length) { toast('대상을 선택해 주세요.'); return; }
+
+  var g = null;
+  S.stmt.forEach(function(x){ if (S.selStmt[x.key]) g = x; });
+  var hasMail = g && g.emails && g.emails.length;
+
+  var html = ''
+    + '<div class="secTitle">거래처</div>'
+    + '<div class="kv"><span>거래처</span><span>' + esc(g ? g.clientName : '-') + '</span></div>'
+    + '<div class="kv"><span>거래처 메일</span><span>' + (hasMail ? esc(g.emails.join(', ')) : '<span style="color:#b3261e">없음</span>') + '</span></div>'
+    + '<div class="secTitle">발송 방식</div>'
+    + '<div class="sw"><input type="checkbox" id="stToClient" ' + (hasMail ? 'checked' : 'disabled') + '>'
+    +   '<div><div class="t">거래처로 발송</div><div class="d">거래처 메일 주소로 명세표 PDF 발송</div></div></div>'
+    + '<div class="sw"><input type="checkbox" id="stToSelf">'
+    +   '<div><div class="t">본사(대표)에게도 발송</div><div class="d">' + esc(S.state && S.state.hqEmail || '') + '</div></div></div>'
+    + '<div class="sw"><input type="checkbox" id="stMark">'
+    +   '<div><div class="t">거래처 미발송 시 완료 처리</div>'
+    +   '<div class="d">체크 안 하면 「거래처발송대기」로 남아 기존 자동감시가 이어받습니다</div></div></div>'
+    + '<div class="notice">거래처 발송 시 <b>명세표발행 ✘ / 명세표발송여부 ✔ / 거래처발송대기 ✘</b> 로 기존 자동화와 동일하게 마감됩니다.</div>'
+    + '<button class="btn" style="margin-top:12px" onclick="confirmSendStmt()">지금 발송</button>';
+  openModal('거래명세표 메일 발송', html);
+}
+
+function confirmSendStmt(){
+  var opts = {
+    toClient: $('stToClient').checked,
+    toSelf: $('stToSelf').checked,
+    markDone: $('stMark').checked
+  };
+  if (!opts.toClient && !opts.toSelf) { toast('발송 대상을 하나 이상 선택해 주세요.'); return; }
+
+  var ids = [];
+  S.stmt.forEach(function(g){ if (S.selStmt[g.key]) g.pages.forEach(function(p){ ids.push(p.pageId); }); });
+  var manageNo = (S.lastStmt && S.lastStmt.pageIds && sameSet(ids, S.lastStmt.pageIds)) ? S.lastStmt.manageNo : '';
+
+  closeModal();
+  loading(true, '거래명세표 발송 중…');
+  api('sendStmt', { ids: ids, manageNo: manageNo, opts: opts }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5500); return; }
+    S.lastStmt = null;
+    openModal('발송 완료', ''
+      + '<div class="kv"><span>관리번호</span><span>' + esc(r.manageNo) + '</span></div>'
+      + '<div class="kv"><span>수신</span><span>' + esc(r.to) + '</span></div>'
+      + '<div class="kv"><span>노션 상태</span><span>' + esc(r.state) + '</span></div>'
+      + '<div class="notice" style="margin-top:12px">새로고침하여 목록에서 사라졌는지 확인하세요.</div>');
+    reloadStmt();
+  });
+}
+
+function sameSet(a, b){
+  if (!a || !b || a.length !== b.length) return false;
+  var s = {}; a.forEach(function(x){ s[x] = 1; });
+  return b.every(function(x){ return !!s[x]; });
+}
+
+/* ---------- 설정 ---------- */
+function fillSettings(){
+  var st = S.state;
+  if (!st) return;
+  var c = st.config || {};
+  $('cfgPoYear').value = c.poYear || 0;
+  $('cfgPoSeq').value = c.poSeq || 0;
+  $('cfgStmtDate').value = c.stmtDate || '';
+  $('cfgStmtSeq').value = c.stmtSeq || 0;
+
+  var lg = st.legacy || {};
+  $('legacyInfo').innerHTML =
+      '발주 Config : ' + (lg.poOk ? ('<b>' + esc(lg.poYear) + '</b> / <b>' + esc(lg.poSeq) + '</b>') : '<span style="color:#b3261e">연결 안 됨</span>')
+    + '<br>명세표 Config : ' + (lg.stmtOk ? ('<b>' + esc(lg.stmtDate) + '</b> / <b>' + esc(lg.stmtSeq) + '</b>') : '<span style="color:#b3261e">연결 안 됨</span>');
+}
+
+function renderBook(){
+  var h = '';
+  S.book.forEach(function(r, i){
+    h += '<div class="bookRow">'
+      + '<input type="text" value="' + esc(r.name) + '" oninput="bookSet(' + i + ',\'name\',this.value)" placeholder="거래처">'
+      + '<input type="text" value="' + esc(r.addr) + '" oninput="bookSet(' + i + ',\'addr\',this.value)" placeholder="주소">'
+      + '<input type="text" value="' + esc(r.tel) + '" oninput="bookSet(' + i + ',\'tel\',this.value)" placeholder="연락처">'
+      + '<button class="delBtn" onclick="bookDel(' + i + ')">✕</button>'
+      + '</div>';
+  });
+  if (!S.book.length) h = '<div class="mini" style="padding:10px 0">등록된 배송지가 없습니다.</div>';
+  $('bookBody').innerHTML = h;
+  $('bookCount').textContent = S.book.length;
+}
+function bookSet(i, k, v){ if (S.book[i]) S.book[i][k] = v; }
+function bookDel(i){ S.book.splice(i, 1); renderBook(); }
+function addBookRow(){ S.book.push({ name: '', addr: '', tel: '' }); renderBook(); }
+
+function saveSettings(){
+  var config = {
+    poYear: Number($('cfgPoYear').value || 0),
+    poSeq: Number($('cfgPoSeq').value || 0),
+    stmtDate: $('cfgStmtDate').value.trim(),
+    stmtSeq: Number($('cfgStmtSeq').value || 0)
+  };
+  var clean = S.book.filter(function(r){ return String(r.name || '').trim() !== ''; });
+  loading(true, '저장 중…');
+  api('saveSettings', { config: config, addressBook: clean }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    if (S.state) { S.state.config = r.config; S.state.legacy = r.legacy; }
+    S.book = clean; renderBook(); fillSettings();
+    toast('저장 완료 · 배송지 ' + r.savedRows + '건'
+      + ((r.configPushed || r.addrPushed) ? ' · 기존시트 반영' : ''), 3600);
+  });
+}
+
+function pushLegacy(){
+  loading(true, '기존 시트로 내보내는 중…');
+  api('pushLegacy', {}, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    toast('내보내기 완료 · 발주Config ' + (r.configPushed ? '✔' : '✘')
+      + ' / 명세표Config ' + (r.stmtConfigPushed ? '✔' : '✘')
+      + ' / AddressBook ' + (r.addrPushed ? '✔' : '✘'), 4000);
+    loadState();
+  });
+}
+
+function pullLegacy(){
+  loading(true, '기존 시트 읽는 중…');
+  api('pullLegacy', {}, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    var lg = r.legacy || {};
+    var html = '<div class="secTitle">기존 시트 Config</div>'
+      + '<div class="kv"><span>발주 A1/B1</span><span>' + esc(lg.poYear) + ' / ' + esc(lg.poSeq) + '</span></div>'
+      + '<div class="kv"><span>명세표 A2/B2</span><span>' + esc(lg.stmtDate) + ' / ' + esc(lg.stmtSeq) + '</span></div>'
+      + '<div class="secTitle">기존 시트 AddressBook (' + r.addressBook.length + '건)</div>';
+    if (r.addressBook.length) {
+      r.addressBook.forEach(function(x){
+        html += '<div class="kv"><span>' + esc(x.name) + '</span><span style="font-weight:400;color:#3a475c">' + esc(x.addr) + ' ' + esc(x.tel) + '</span></div>';
+      });
+      html += '<button class="btn dark" style="margin-top:14px" onclick="applyPulled()">이 값을 신규 시트로 가져오기</button>';
+      S._pulled = r.addressBook;
+    } else {
+      html += '<div class="mini">값이 없습니다.</div>';
+    }
+    openModal('기존 시트 값', html);
+  });
+}
+function applyPulled(){
+  if (!S._pulled) return;
+  S.book = S._pulled.slice(); renderBook(); closeModal();
+  toast('가져왔습니다. 「설정 저장」을 눌러 확정하세요.', 3200);
+}
+
+function pingServer(){
+  loading(true, '연결 확인 중…');
+  api('ping', {}, function(r){
+    loading(false);
+    if (r && r.ok) { toast('연결 성공 · ' + (r.at || ''), 3200); loadState(); }
+    else { toast('연결 실패: ' + (r && r.error || '응답 없음'), 5000); }
+  });
+}
+
+/* ---------- 사용 매뉴얼 (웹앱 내장) ---------- */
+function openManual(){
+  var h = ''
+  + '<div class="manual">'
+
+  + '<h4>0. 준비물 3가지</h4>'
+  + '<ul>'
+  + '<li><b>① GAS 웹앱 URL</b> — Apps Script 배포 → 웹앱 → 액세스 권한 <code>모든 사용자</code> → 배포 후 나온 <code>/exec</code> 주소</li>'
+  + '<li><b>② 신규 스프레드시트</b> — <code>Config</code>(발주 번호), <code>STMT_Config</code>(명세표 번호), '
+  + '<code>AddressBook</code>, <code>PO_Log</code>, <code>STMT_Log</code> 는 자동 생성. '
+  + '<code>PO_Template</code>·<code>STMT_Template</code> 는 기존 시트에서 <b>복사</b>해서 넣습니다.</li>'
+  + '<li><b>③ API KEY</b>(권장) — GAS 스크립트 속성 <code>API_KEY</code> 에 값을 넣으면, 그 값을 아는 사람만 실행할 수 있습니다.</li>'
+  + '</ul>'
+  + '<div class="warnBox">이 웹앱은 GitHub Pages 에서 열립니다. 그래서 <code>google.script.run</code> 을 쓰지 않고 '
+  + '<b>fetch POST(text/plain)</b> 로 GAS 를 호출합니다. 이 방식이 CORS 사전요청(preflight)을 만들지 않아 가장 안전합니다.</div>'
+
+  + '<h4>1. 이 웹앱이 하는 일</h4>'
+  + '<p>노션 「푸로찜 입출고 DB」를 읽어 <b>발주서</b>와 <b>거래명세표</b>를 PDF 로 만들고, 미리보기로 확인한 뒤 메일로 보냅니다. '
+  + '발송하면 기존 GAS 자동화와 <b>완전히 동일한 규칙</b>으로 노션 속성이 갱신됩니다. '
+  + '즉 웹앱을 쓰든 기존 자동화를 쓰든 <b>이중 발송이 생기지 않습니다.</b></p>'
+
+  + '<h4>2. 발주서 흐름</h4>'
+  + '<ul>'
+  + '<li>대상 조건: <code>발주=체크</code> + <code>발주관리번호=비어있음</code> + <code>출고여부≠True</code> + <code>발주서발송여부≠체크</code></li>'
+  + '<li>미리보기 → 발주번호가 <b>임시로만</b> 표시됩니다. <b>기록되지 않습니다.</b></li>'
+  + '<li>발송 시 노션 갱신: <code>발주서발송여부=✔</code>, <code>발주=✘</code>, <code>발주관리번호=번호</code>, <code>관리번호=번호</code></li>'
+  + '<li>이 체크 때문에 같은 건이 두 번 발송되지 않습니다(기존 자동화와 동일한 방어).</li>'
+  + '<li>기록처: <code>PO_Log</code> (실행일시 / 발주번호 / 납품희망일 / 품목수 / 결과 / 메세지 / 수량(Box) / 총량(KG) / 납품장소)</li>'
+  + '</ul>'
+
+  + '<h4>3. 거래명세표 흐름</h4>'
+  + '<ul>'
+  + '<li>대상 조건: <code>명세표발행=체크</code> + <code>명세표발송여부=미체크</code> + <code>거래처발송대기=미체크</code> + <code>출고여부=True</code></li>'
+  + '<li>같은 거래처 건은 자동으로 1장에 묶입니다 (최대 4줄).</li>'
+  + '<li><b>거래처 메일이 있을 때</b> → 거래처로 발송 → <code>명세표발송여부=✔</code>, <code>명세표발행=✘</code>, <code>거래처발송대기=✘</code></li>'
+  + '<li><b>거래처 메일이 없을 때</b> → 기본은 <code>거래처발송대기=✔</code> 로 남겨 <b>기존 자동감시</b>가 이어받습니다. '
+  + '본사만 받고 끝내려면 「거래처 미발송 시 완료 처리」를 체크하세요.</li>'
+  + '<li>본사(대표)에게도 받고 싶으면 「본사에게도 발송」을 체크하세요.</li>'
+  + '<li>기록처: <code>STMT_Log</code> (날짜 / 관리번호 / 거래처 / 결과 / 판매금 / 박스수량 / 거래처 발송 이메일주소 / '
+  + '거래처 메일 발송결과 / 납품일자 / 실제 발송된 거래처 이메일 / 이메일 발송날짜 / PO_Template 관리번호 / 규격 / 수량 / 단가 / 금액)</li>'
+  + '</ul>'
+
+  + '<h4>4. 관리번호 (중앙 발급)</h4>'
+  + '<p>신규 시트의 <code>Config</code>(발주) · <code>STMT_Config</code>(명세표) 가 <b>중앙 발급소</b>입니다. '
+  + '발급 전에 기존 시트의 Config 값도 함께 읽어 <b>더 큰 값 + 1</b> 로 만들고, 노션에 같은 번호가 이미 있으면 자동으로 +1 재시도합니다. '
+  + '발급 후에는 신규·기존 <b>양쪽 Config 에 동시에 기록</b>합니다.</p>'
+  + '<div class="warnBox">한계: Apps Script 의 <code>LockService</code> 는 <b>같은 프로젝트 안에서만</b> 유효합니다. '
+  + '기존 자동화가 동시에 번호를 뽑으면 1건 정도 번호가 겹칠 수 있습니다. '
+  + '그래서 <b>노션 중복검사</b>로 재발급하고, 최종 방어선은 <b>노션 속성(발주관리번호/명세표관리번호)</b> 입니다. '
+  + '번호가 가끔 건너뛰는 것은 정상이며 업무에 영향이 없습니다.</div>'
+
+  + '<h4>5. AddressBook</h4>'
+  + '<p>신규 시트에서만 <b>편집</b>하고, 「설정 저장」을 누르면 기존 발주서 시트의 AddressBook 으로 <b>내보내기</b>됩니다. '
+  + '기존 GAS 의 AddressBook 은 조회 전용으로 두는 것이 안전합니다.</p>'
+
+  + '<h4>6. 매일 쓰는 순서</h4>'
+  + '<ul>'
+  + '<li>① 노션에서 「발주」 또는 「명세표발행」 체크</li>'
+  + '<li>② 웹앱에서 새로고침 → 대상 선택</li>'
+  + '<li>③ 미리보기로 PDF 확인 (번호 소비 없음)</li>'
+  + '<li>④ 메일 발송 → 완료 창 확인 → 새로고침으로 목록에서 사라졌는지 확인</li>'
+  + '</ul>'
+
+  + '<h4>7. 문제가 생기면</h4>'
+  + '<ul>'
+  + '<li><b>“GAS URL 미설정”</b> → 설정 탭에서 <code>/exec</code> 주소 입력 후 「연결 저장」</li>'
+  + '<li><b>“연결 실패”</b> → 배포 권한이 <code>모든 사용자</code>인지 확인. 저장 후 「연결 테스트」</li>'
+  + '<li><b>“STMT_Template 시트가 없습니다”</b> → 기존 명세표 시트의 템플릿을 이 문서로 복사</li>'
+  + '<li><b>“이미 발송된 항목…”</b> → 다른 곳(자동화)에서 먼저 발송됨. 새로고침 후 다시 선택</li>'
+  + '<li><b>PDF 가 안 보임</b> → 「새창 열기」 또는 「PDF 저장」 사용</li>'
+  + '<li><b>기존 자동화와 시간대 충돌</b> → 트리거 시간을 웹앱 사용 시간대와 겹치지 않게 조정</li>'
+  + '</ul>'
+
+  + '<h4>8. 안전 원칙 (요약)</h4>'
+  + '<ul>'
+  + '<li>기존 2개 자동화의 <b>트리거·메일·PDF·노션 갱신 로직은 그대로</b> 둡니다.</li>'
+  + '<li>신규 코드가 기존 시트에 쓰는 곳은 <b>딱 3곳</b>: AddressBook(A:C), 발주 Config(A1:B1), 명세표 Config(A2:B2).</li>'
+  + '<li>그 3곳의 쓰기도 <b>실패하면 조용히 넘어갑니다</b>(본 작업을 막지 않음).</li>'
+  + '</ul>'
+
+  + '<div class="warnBox" style="margin-top:14px">기존 2개 GAS 자동화는 <b>그대로 둡니다.</b> '
+  + '이 웹앱은 별도 스프레드시트에서 독립 실행되며, 기존 시트의 Config·AddressBook 외에는 아무것도 수정하지 않습니다.</div>'
+  + '</div>';
+  openModal('사용 매뉴얼', h);
+}
+
+/* ---------- 해시 라우팅(#po / #stmt / #set) ---------- */
+function applyHash(){
+  var h = (location.hash || '').replace('#','');
+  if (h !== 'po' && h !== 'stmt' && h !== 'set') return;
+  var b = document.querySelector('.tab[data-tab="' + h + '"]');
+  if (b) b.click();
+}
+
+/* ---------- 시작 ---------- */
+loadConn();
+updateBar();
+if (S.gasUrl) { loadState(); reloadPo(); reloadStmt(); }
+else {
+  $('poList').innerHTML = '<div class="empty"><span class="ico">🔌</span>먼저 「설정」 탭에서<br>GAS 웹앱 URL 을 입력해 주세요.</div>';
+  $('stmtList').innerHTML = '<div class="empty"><span class="ico">🔌</span>먼저 「설정」 탭에서<br>GAS 웹앱 URL 을 입력해 주세요.</div>';
+}
+applyHash();
+window.addEventListener('hashchange', applyHash);
+
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
