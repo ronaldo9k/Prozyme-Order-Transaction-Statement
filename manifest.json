@@ -1,0 +1,51 @@
+{
+  "name": "푸로찜 발주·명세표",
+  "short_name": "발주서&거래명세표",
+  "description": "노션 기반 발주서·거래명세표 PDF 생성 및 메일 발송 웹앱",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f6fa",
+  "theme_color": "#14203a",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "발주서",
+      "short_name": "발주서",
+      "url": "./index.html#po"
+    },
+    {
+      "name": "거래명세표",
+      "short_name": "명세표",
+      "url": "./index.html#stmt"
+    }
+  ]
+}
