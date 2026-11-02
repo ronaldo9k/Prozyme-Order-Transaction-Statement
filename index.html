@@ -33,11 +33,11 @@
   .logo img{width:100%;height:100%;object-fit:cover}
   .brand h1{font-size:16px;margin:0;font-weight:700;letter-spacing:-.3px}
   .brand .env{margin-left:auto;font-size:11px;opacity:.72;text-align:right;line-height:1.3}
-  .tabs{display:flex;gap:6px}
+  .tabs{display:flex;gap:4px}
   .tab{
     flex:1;border:0;background:transparent;color:rgba(255,255,255,.62);
-    padding:11px 6px 13px;font-size:14px;font-weight:600;font-family:inherit;
-    border-bottom:3px solid transparent;cursor:pointer;transition:.18s;
+    padding:10px 4px 12px;font-size:13px;font-weight:600;font-family:inherit;
+    border-bottom:3px solid transparent;cursor:pointer;transition:.18s;white-space:nowrap;
   }
   .tab.on{color:#fff;border-bottom-color:#7ea8ff}
   main{padding:14px 14px 0;max-width:720px;margin:0 auto}
@@ -57,6 +57,7 @@
   .pill.warn{background:#fdf1e0;color:#a8630a}
   .pill.bad{background:#fdeceb;color:#b3261e}
   .pill.blue{background:#e8effd;color:#1d4ed8}
+  .pill.gray{background:#eef1f5;color:#5b6b82}
   button{font-family:inherit}
   .btn{
     border:0;border-radius:11px;padding:13px 14px;font-size:14px;font-weight:700;
@@ -66,6 +67,7 @@
   .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
   .btn.dark{background:var(--navy)}
   .btn.ok{background:var(--ok)}
+  .btn.bad{background:var(--bad)}
   .btn.sm{padding:9px 12px;font-size:13px;border-radius:9px;width:auto}
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .listItem{
@@ -73,6 +75,8 @@
     display:flex;gap:10px;align-items:flex-start;background:#fff;cursor:pointer;transition:.15s;
   }
   .listItem.sel{border-color:var(--accent);background:#f6f9ff;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+  .listItem.locked{background:#fffdf7;border-color:#f3e2c0}
+  .listItem.readonly{opacity:.72;cursor:default}
   .listItem .chk{
     width:20px;height:20px;border-radius:6px;border:2px solid #c7d2e0;flex:0 0 auto;margin-top:1px;
     display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:#fff;
@@ -86,12 +90,13 @@
   .empty .ico{font-size:26px;display:block;margin-bottom:6px;opacity:.5}
   .field{margin-bottom:9px}
   .field label{display:block;font-size:11.5px;font-weight:700;color:var(--sub);margin-bottom:4px}
-  input[type=text],input[type=email],input[type=date],input[type=number],input[type=url],input[type=password],textarea{
+  input[type=text],input[type=email],input[type=date],input[type=number],input[type=url],input[type=password],textarea,select{
     width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
     font-size:14px;font-family:inherit;background:#fbfcfe;color:var(--ink);outline:none;
   }
-  input:focus,textarea:focus{border-color:var(--accent);background:#fff}
+  input:focus,textarea:focus,select:focus{border-color:var(--accent);background:#fff}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
   .bookRow{display:grid;grid-template-columns:1.1fr 1.6fr .9fr 32px;gap:6px;margin-bottom:6px}
   .bookRow input{padding:9px 8px;font-size:12.5px}
   .delBtn{border:1px solid var(--line);background:#fff;color:#b3261e;border-radius:8px;
@@ -155,6 +160,23 @@
   .sw input{width:auto;transform:scale(1.15);margin:0}
   .sw .t{font-size:13.5px;font-weight:600}
   .sw .d{font-size:11.5px;color:var(--sub)}
+  /* v3.0 추가 */
+  .searchRow{display:flex;gap:6px;margin-bottom:9px}
+  .searchRow input{flex:1}
+  .scrollX{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
+  .histTable{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+  .histTable th,.histTable td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+  .histTable th{background:#f4f6fa;color:var(--navy);font-weight:700;white-space:nowrap;position:sticky;top:0}
+  .histTable td.c{white-space:nowrap}
+  .histTable tr.rowsel{background:#f2f7ff}
+  .histChk{width:16px;height:16px}
+  .chipbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+  .chipbar .btn{padding:7px 10px;font-size:12px;border-radius:20px;width:auto}
+  .badgeRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .stepNo{display:inline-flex;width:18px;height:18px;border-radius:50%;background:var(--accent);
+    color:#fff;font-size:11px;align-items:center;justify-content:center;font-weight:700;margin-right:5px}
+  .divider{height:1px;background:var(--line);margin:12px 0}
+  .fold > summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--navy);outline:none}
 </style>
 </head>
 <body>
@@ -168,51 +190,168 @@
   <div class="tabs">
     <button class="tab on" data-tab="po">발주서</button>
     <button class="tab" data-tab="stmt">거래명세표</button>
+    <button class="tab" data-tab="hist">발송이력</button>
     <button class="tab" data-tab="set">설정</button>
   </div>
 </header>
 
 <main>
-  <!-- ================= 발주서 ================= -->
+  <!-- ================= 1. 발주서 ================= -->
   <section class="panel on" id="p-po">
     <div class="card">
       <h2><span class="dot"></span>발주 대상 <span class="pill" id="poCount">0건</span></h2>
       <div class="mini" style="margin-bottom:10px">
-        노션 조건 · <b>발주=체크</b> + <b>발주관리번호=비어있음</b> + <b>출고여부≠True</b> + <b>발주서발송여부≠체크</b>
+        노션 조건 · <b>발주관리번호=비어있음</b> + <b>발주서발송여부≠체크</b> + <b>출고여부≠True</b><br>
+        「발주」 체크 여부와 상관없이 <b>보낼 수 있는 건은 모두</b> 나옵니다 → 웹앱이 먼저 잡습니다.
       </div>
+
+      <div class="searchRow">
+        <input type="text" id="poSearch" placeholder="제품명 · 거래처 · 배송지 검색" onkeydown="if(event.key==='Enter')reloadPo()">
+        <button class="btn ghost sm" onclick="reloadPo()">검색</button>
+      </div>
+
       <div id="poList"><div class="empty"><span class="ico">⏳</span>불러오는 중…</div></div>
-      <div class="row" style="margin-top:6px">
+
+      <div class="divider"></div>
+      <div class="row wrap">
         <button class="btn ghost sm" onclick="reloadPo()">↻ 새로고침</button>
         <button class="btn ghost sm" onclick="selAll('po')">전체 선택</button>
         <button class="btn ghost sm" onclick="selNone('po')">선택 해제</button>
       </div>
+      <div class="row wrap" style="margin-top:8px">
+        <button class="btn dark sm" onclick="poSetCheck(1)"><span class="stepNo">1</span>발주 체크</button>
+        <button class="btn ghost sm" onclick="poSetCheck(0)">발주 체크 해제</button>
+        <button class="btn ghost sm" onclick="poRelease()">웹앱 잠금 해제</button>
+      </div>
+      <div class="notice" style="margin-top:10px" id="poGuardNote">
+        <b>왜 「발주 체크」를 웹앱에서 먼저 하나요?</b> 체크하는 순간 이 페이지에 <b>웹앱 잠금(「웹앱제어」=✔)</b>이 함께 켜집니다.
+        그러면 기존 발주서 자동화 트리거가 이 페이지를 <b>건너뜁니다</b>. → 회사 메일로 PDF가 가지 않고, 웹앱 미리보기로만 확인합니다.
+      </div>
     </div>
   </section>
 
-  <!-- ================= 거래명세표 ================= -->
+  <!-- ================= 2. 거래명세표 ================= -->
   <section class="panel" id="p-stmt">
     <div class="card">
-      <h2><span class="dot"></span>명세표 대상 <span class="pill" id="stmtCount">0건</span></h2>
-      <div class="mini" style="margin-bottom:10px">
-        노션 조건 · <b>명세표발행=체크</b> + <b>명세표발송여부=미체크</b> + <b>거래처발송대기=미체크</b> + <b>출고여부=True</b><br>
-        같은 거래처 건은 1장의 명세표로 묶입니다. (최대 4줄)
+      <h2><span class="dot"></span>① 거래처 검색 <span class="pill" id="stmtWindowPill">최근 90일</span></h2>
+      <div class="mini" style="margin-bottom:8px">
+        거래처 이름 또는 이메일 일부로 검색합니다. 최근 <b id="stmtWindowTxt">90</b>일 내 생성된 페이지만 대상입니다.
       </div>
-      <div id="stmtList"><div class="empty"><span class="ico">⏳</span>불러오는 중…</div></div>
-      <div class="row" style="margin-top:6px">
-        <button class="btn ghost sm" onclick="reloadStmt()">↻ 새로고침</button>
+      <div class="searchRow">
+        <input type="text" id="stmtClientQ" placeholder="거래처명 / 이메일" onkeydown="if(event.key==='Enter')searchClients()">
+        <button class="btn ghost sm" onclick="searchClients()">검색</button>
+      </div>
+      <div class="row wrap" style="margin-bottom:8px">
+        <button class="btn ghost sm" onclick="setWindow(90)">90일</button>
+        <button class="btn ghost sm" onclick="setWindow(60)">60일</button>
+        <button class="btn ghost sm" onclick="setWindow(30)">30일</button>
+      </div>
+      <div id="clientList"><div class="empty"><span class="ico">🔎</span>거래처를 검색해 주세요.</div></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>② 선택 거래처의 페이지 <span class="pill" id="stmtPageCount">0건</span></h2>
+      <div class="mini" style="margin-bottom:10px">
+        이미 발송 완료된 건(<b>명세표발송여부=✔</b>)은 <b>미리보기 전용</b>으로만 열립니다. (발송 버튼 비활성)
+      </div>
+      <div id="stmtList"><div class="empty"><span class="ico">👈</span>위에서 거래처를 선택하세요.</div></div>
+      <div class="divider"></div>
+      <div class="row wrap">
         <button class="btn ghost sm" onclick="selAll('stmt')">전체 선택</button>
         <button class="btn ghost sm" onclick="selNone('stmt')">선택 해제</button>
+        <button class="btn dark sm" onclick="stmtSetIssue(1)"><span class="stepNo">1</span>명세표발행 체크</button>
+        <button class="btn ghost sm" onclick="stmtSetIssue(0)">체크 해제</button>
+      </div>
+      <div class="notice" style="margin-top:10px">
+        「명세표발행」을 체크하면 이 페이지에 <b>웹앱 잠금</b>이 켜져, 기존 거래명세표 자동화가 <b>본사 메일을 보내지 않습니다</b>.
+        대신 웹앱에서 PDF 미리보기 → 필요하면 거래처 메일로 발송합니다.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>③ 납품형태 자동발송 (탈것: 택배·본사)</h2>
+      <div class="mini" style="margin-bottom:8px">
+        <b>납품형태</b>가 <span id="allowedTypesTxt">택배 발송 / 본사 발송 / 택배 제2배송처 / 본사 제2배송처</span> 인 페이지를,
+        <b>납품일자</b> 기준(D-0 ~ 3일 유예)으로 <b>거래처 메일로만</b> 자동 발송합니다. (본사 메일 없음)
+      </div>
+      <div class="row wrap">
+        <button class="btn ghost sm" onclick="loadAuto()">↻ 자동발송 현황</button>
+        <button class="btn ghost sm" onclick="runAuto(true)">모의실행(dry)</button>
+        <button class="btn dark sm" onclick="runAuto(false)">지금 실행</button>
+      </div>
+      <div id="autoList" class="mini" style="margin-top:8px">–</div>
+    </div>
+  </section>
+
+  <!-- ================= 3. 발송이력 ================= -->
+  <section class="panel" id="p-hist">
+    <div class="card">
+      <h2><span class="dot"></span>발송이력 조회</h2>
+      <div class="grid2">
+        <div class="field"><label>종류</label>
+          <select id="hKind">
+            <option value="">전체</option>
+            <option value="발주서">발주서</option>
+            <option value="거래명세표">거래명세표</option>
+          </select>
+        </div>
+        <div class="field"><label>상태</label>
+          <select id="hStatus">
+            <option value="">전체</option>
+            <option value="발송완료">발송완료 (거래처/본사)</option>
+            <option value="대기">대기 (미리보기·발송 안 함)</option>
+            <option value="수동완료">수동완료</option>
+            <option value="실패">실패</option>
+            <option value="취소">취소 (만료)</option>
+          </select>
+        </div>
+        <div class="field"><label>시작일</label><input type="date" id="hFrom"></div>
+        <div class="field"><label>종료일</label><input type="date" id="hTo"></div>
+      </div>
+      <div class="field"><label>검색어 (거래처 / 관리번호 / 수신 / 제목)</label>
+        <input type="text" id="hQ" placeholder="예: 현대, 20261102, @naver.com"
+          onkeydown="if(event.key==='Enter')loadHistory()">
+      </div>
+      <div class="chipbar">
+        <button class="btn ghost sm" onclick="loadHistory()">조회</button>
+        <button class="btn ghost sm" onclick="quickRange('today')">오늘</button>
+        <button class="btn ghost sm" onclick="quickRange('7d')">최근 7일</button>
+        <button class="btn ghost sm" onclick="quickRange('30d')">최근 30일</button>
+        <button class="btn ghost sm" onclick="quickRange('month')">이번달</button>
+        <button class="btn ghost sm" onclick="quickRange('all')">전체</button>
+      </div>
+      <div class="divider"></div>
+      <div class="row wrap">
+        <span class="pill" id="hCount">0건</span>
+        <button class="btn ghost sm" onclick="histSelectAll(true)">전체선택</button>
+        <button class="btn ghost sm" onclick="histSelectAll(false)">선택해제</button>
+        <button class="btn bad sm" onclick="histDeleteSelected()">선택 삭제</button>
+        <button class="btn bad sm" onclick="histDeleteAll()">표시된 이력 전체 삭제</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="scrollX">
+        <table class="histTable">
+          <thead><tr>
+            <th>선택</th><th>일시</th><th>종류</th><th>상태</th><th>관리번호</th>
+            <th>거래처</th><th>수신</th><th>비고</th>
+          </tr></thead>
+          <tbody id="histBody">
+            <tr><td colspan="8" class="mini">조회 버튼을 눌러 주세요.</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
 
-  <!-- ================= 설정 ================= -->
+  <!-- ================= 4. 설정 ================= -->
   <section class="panel" id="p-set">
     <div class="card">
       <h2><span class="dot"></span>서버 연결 (Google Apps Script)</h2>
       <div class="field">
         <label>웹앱 배포 URL (/exec)</label>
-        <input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/AKfycbwAKzJJXLDNYlGb0YYDqOiR9wEV99fltWCh_pzqLImDoV7QevNI5E-sQJ5U5-HEGzBg/exec">
+        <input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/AKfycbyAv9RRD6YjOFaBXB2xw5Pztl6HyEi-lTT8CiAiWKlatRlS_Wko_7zJ1da63T_CHGHQ/exec">
       </div>
       <div class="field">
         <label>API KEY (GAS 스크립트 속성에 넣은 경우에만)</label>
@@ -222,7 +361,17 @@
         <button class="btn dark sm" onclick="saveConn()">연결 저장</button>
         <button class="btn ghost sm" onclick="pingServer()">연결 테스트</button>
       </div>
-      <div class="notice">이 값은 <b>이 브라우저에만</b> 저장됩니다(localStorage). 다른 기기에서는 한 번 더 입력하세요.</div>
+      <details class="fold" style="margin-top:6px">
+        <summary>이 항목이 왜 필요한가요? (보안 · 구조 설명)</summary>
+        <div class="notice" style="margin-top:8px">
+          이 화면(Index.html)은 <b>GitHub Pages</b>에서 열리는 "남의 서버" 페이지입니다. 남의 서버 페이지는
+          <code>google.script.run</code> 을 쓸 수 없어서, <b>GAS /exec 주소를 직접 알고 있어야</b> 호출할 수 있습니다.
+          그래서 주소를 <b>이 브라우저(localStorage)에만</b> 저장합니다.<br><br>
+          · <b>API KEY</b>는 GAS 쪽 <code>API_KEY</code> 속성과 짝을 이루는 "비밀번호"입니다. 넣으면 주소를 아는 사람도 키 없이는 실행 못 합니다. (선택)<br>
+          · 저장된 값은 <b>서버로 전송되지 않고</b>, 오직 본인 기기에서만 쓰입니다.<br>
+          · 주소를 코드에 박아두면 재배포 때마다 GitHub를 고쳐야 하므로, <b>입력값 저장 방식</b>이 더 안전하고 편합니다.
+        </div>
+      </details>
     </div>
 
     <div class="card">
@@ -234,6 +383,35 @@
         <div class="field"><label>명세표 – 마지막순번 (STMT_Config B2)</label><input type="number" id="cfgStmtSeq"></div>
       </div>
       <div class="notice">미리보기는 번호를 <b>소비하지 않습니다</b>. 실제 <b>메일 발송</b> 시점에만 번호가 발급·기록됩니다.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>메일 기본 문구 <span class="pill" id="mailTplPill">편집</span></h2>
+      <div class="mini" style="margin-bottom:8px">
+        발송 창에 이 문구가 <b>미리 채워집니다</b>. 발송할 때마다 그 자리에서 몇 줄 고쳐도 됩니다.
+        치환: <code>{발주번호}</code> <code>{납품희망일}</code> <code>{관리번호}</code> <code>{거래처}</code> <code>{납품일자}</code>
+      </div>
+      <div class="field"><label>발주서 – 제목</label><input type="text" id="tplPoSubject"></div>
+      <div class="field"><label>발주서 – 본문</label><textarea id="tplPoBody" rows="4"></textarea></div>
+      <div class="divider"></div>
+      <div class="field"><label>거래명세표 – 제목</label><input type="text" id="tplStmtSubject"></div>
+      <div class="field"><label>거래명세표 – 본문</label><textarea id="tplStmtBody" rows="4"></textarea></div>
+      <button class="btn ghost sm" onclick="saveMailTpl()">문구 저장</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>자동발송 주체 <span class="pill" id="autoOwnerPill">-</span></h2>
+      <div class="mini" id="autoOwnerNote">–</div>
+      <div class="row wrap" style="margin-top:8px">
+        <button class="btn ghost sm" onclick="loadAuto()">현황 보기</button>
+        <button class="btn ghost sm" onclick="runAuto(true)">모의실행</button>
+      </div>
+      <div class="warnBox" style="margin-top:8px">
+        <b>중요</b> — 자동발송을 웹앱이 맡으려면 GAS 스크립트 속성에 <code>AUTO_SEND_OWNER=webapp</code> 을 넣고,
+        기존 「택배업체 거래명세표」 프로젝트의 <code>autoCheckStatementIssue</code> / <code>runDeliveryStatement</code> /
+        <code>processWaitingDeliveries</code> / <code>sendScheduledClientEmail</code> 트리거를 <b>끄세요</b>.
+        둘 다 켜두면 같은 건을 두 번 보낼 수 있습니다. (기본값 <code>legacy</code> = 기존 자동화 유지)
+      </div>
     </div>
 
     <div class="card">
@@ -284,13 +462,14 @@
 <div class="load" id="load"><div class="spin"></div><div class="loadTxt" id="loadTxt">처리 중…</div></div>
 <script>
 /* =====================================================================
- * 푸로찜 웹앱 Index  v2.0  (GitHub Pages 용)
+ * 푸로찜 웹앱 Index  v3.0  (GitHub Pages 용)
  * ---------------------------------------------------------------------
  *  · google.script.run 은 HtmlService 안에서만 동작하므로 사용하지 않습니다.
  *  · GAS 웹앱(/exec)에 fetch POST + Content-Type: text/plain 으로 호출합니다.
- *    (text/plain 은 CORS preflight 를 발생시키지 않아 GitHub Pages 에서 바로 됩니다)
  *  · 실패하면 JSONP(doGet?callback=) 로 자동 재시도합니다.
  *  · 서버 주소/API KEY 는 localStorage 에만 저장됩니다.
+ *  · v3.0 추가: 발송이력 탭, 거래처 검색(90일), 발주/명세표발행 체크,
+ *              납품형태 자동발송 현황, 메일 문구 편집, 매뉴얼 갱신
  * ===================================================================== */
 
 var LS_URL = 'prozyme_gas_url';
@@ -301,13 +480,21 @@ var S = {
   state: null,
   po: [],
   stmt: [],
+  clients: [],
+  clientKey: '',
+  clientName: '',
   selPo: {},
   selStmt: {},
+  hist: [],
+  histSel: {},
   book: [],
   lastPo: null,
   lastStmt: null,
   gasUrl: '',
-  apiKey: ''
+  apiKey: '',
+  windowDays: 90,
+  _pdfUrl: '',
+  _pulled: null
 };
 
 /* ---------- 공통 ---------- */
@@ -370,7 +557,6 @@ function api(action, extra, cb){
     if (cb) cb(data);
   })
   .catch(function(err){
-    /* CORS/네트워크 문제 → JSONP 로 한 번 더 시도 */
     jsonp(action, body, function(data){
       if (data) { if (cb) cb(data); }
       else { if (cb) cb({ ok: false, error: '연결 실패: ' + err.message }); }
@@ -380,7 +566,7 @@ function api(action, extra, cb){
 
 function jsonp(action, body, cb){
   var name = '_cb' + Math.random().toString(36).slice(2);
-  var timer = setTimeout(function(){ cleanup(); cb(null); }, 20000);
+  var timer = setTimeout(function(){ cleanup(); cb(null); }, 25000);
 
   window[name] = function(data){ clearTimeout(timer); cleanup(); cb(data); };
 
@@ -411,13 +597,14 @@ Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){
     Array.prototype.forEach.call(document.querySelectorAll('.panel'), function(x){ x.classList.remove('on'); });
     $('p-' + t).classList.add('on');
     if (t === 'set') fillSettings();
+    if (t === 'hist') loadHistory();
     updateBar();
   };
 });
 
 function updateBar(){
   var bar = $('bar');
-  if (S.tab === 'set') { bar.style.display = 'none'; return; }
+  if (S.tab === 'set' || S.tab === 'hist') { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
   var n = (S.tab === 'po') ? Object.keys(S.selPo).length : Object.keys(S.selStmt).length;
   $('btnPreview').disabled = n === 0;
@@ -435,32 +622,58 @@ function loadState(){
     $('appTitle').textContent = r.appTitle || '푸로찜 발주·명세표';
     $('envLine').innerHTML = (r.hasPoTemplate ? '' : '⚠ PO_Template 없음<br>')
       + (r.hasStmtTemplate ? '' : '⚠ STMT_Template 없음<br>')
-      + (r.legacyLinked ? '기존시트 연동' : '기존시트 미설정');
+      + (r.legacyLinked ? '기존시트 연동' : '기존시트 미설정')
+      + (r.hasWebctrl ? '' : '<br>⚠ 「웹앱제어」 속성 없음');
+
+    if (r.clientWindowDays) { S.windowDays = r.clientWindowDays; setWindowLabel(); }
+    if (r.allowedTypes) $('allowedTypesTxt').textContent = r.allowedTypes.join(' / ');
+
     S.book = r.addressBook || [];
     fillSettings();
     renderBook();
+    fillMailTpl();
+    renderOwner();
   });
 }
 
-/* ---------- 발주서 ---------- */
+function setWindow(d){
+  S.windowDays = d; setWindowLabel();
+  if (S.tab === 'stmt') { searchClients(); }
+}
+function setWindowLabel(){
+  $('stmtWindowTxt').textContent = S.windowDays;
+  $('stmtWindowPill').textContent = '최근 ' + S.windowDays + '일';
+}
+
+/* =====================================================================
+ * 1. 발주서
+ * ===================================================================== */
 function reloadPo(){
   $('poList').innerHTML = '<div class="empty"><span class="ico">⏳</span>불러오는 중…</div>';
-  api('listPo', {}, function(r){
+  api('listPoCandidates', { opts: { q: $('poSearch').value.trim(), includeChecked: true } }, function(r){
     if (!r || !r.ok) { $('poList').innerHTML = '<div class="empty"><span class="ico">⚠</span>' + esc(r && r.error) + '</div>'; return; }
     S.po = r.rows || [];
     S.selPo = {};
     renderPo();
+    if (r.webctrlReady === false) {
+      $('poGuardNote').innerHTML = '<b>⚠ 「웹앱제어」 속성이 없습니다.</b> 노션 「푸로찜 입출고 DB」에 '
+        + '<b>체크박스</b> 속성 <code>웹앱제어</code> 를 추가하면, 웹앱이 잡은 페이지를 기존 자동화가 건너뜁니다. '
+        + '(없어도 동작은 하지만, 기존 자동화와 겹칠 수 있습니다)';
+      $('poGuardNote').className = 'badBox';
+    }
   });
 }
 
 function renderPo(){
   var h = '';
   if (!S.po.length) {
-    h = '<div class="empty"><span class="ico">📭</span>발주 대상이 없습니다.<br><span class="mini">노션에서 「발주」 체크 후 새로고침</span></div>';
+    h = '<div class="empty"><span class="ico">📭</span>발주 대상이 없습니다.<br>'
+      + '<span class="mini">조건: 발주관리번호 비어있음 · 발주서발송여부 미체크 · 출고여부≠True</span></div>';
   }
   S.po.forEach(function(it, i){
     var on = !!S.selPo[it.pageId];
-    h += '<div class="listItem' + (on ? ' sel' : '') + '" onclick="togglePo(' + i + ')">'
+    var cls = 'listItem' + (on ? ' sel' : '') + (it.webctrl ? ' locked' : '');
+    h += '<div class="' + cls + '" onclick="togglePo(' + i + ')">'
       +  '<div class="chk">' + (on ? '✓' : '') + '</div>'
       +  '<div class="grow">'
       +    '<div class="liTop"><span class="liTitle">' + esc(it.product || it.title || '(제품명 없음)') + '</span>'
@@ -468,7 +681,12 @@ function renderPo(){
       +    '<div class="liMeta">수량 <b>' + comma(it.qty) + '</b>'
       +      (it.dueDate ? ' · 납품요청 <b>' + esc(it.dueDate) + '</b>' : ' · <span style="color:#b3261e">납품요청일 없음</span>')
       +      (it.site ? '<br>배송지 <b>' + esc(it.site) + '</b>' : '')
+      +      (it.title ? '<br>입출고 <b>' + esc(it.title) + '</b>' : '')
       +      (it.memo ? '<br>비고 ' + esc(it.memo) : '')
+      +    '</div>'
+      +    '<div class="badgeRow">'
+      +      '<span class="pill ' + (it.ordered ? 'ok' : 'gray') + '">발주 ' + (it.ordered ? '✔' : '✘') + '</span>'
+      +      (it.webctrl ? '<span class="pill warn">웹앱 잠금</span>' : '')
       +    '</div>'
       +  '</div></div>';
   });
@@ -482,12 +700,80 @@ function togglePo(i){
   renderPo();
 }
 
-/* ---------- 거래명세표 ---------- */
-function reloadStmt(){
+function poSetCheck(on){
+  var ids = Object.keys(S.selPo);
+  if (!ids.length) { toast('대상을 선택해 주세요.'); return; }
+  loading(true, on ? '「발주」 체크 + 웹앱 잠금 중…' : '「발주」 체크 해제 중…');
+  api('setPoCheck', { ids: ids, on: !!on }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    toast(r.note || '완료', 4200);
+    reloadPo();
+  });
+}
+
+function poRelease(){
+  var ids = Object.keys(S.selPo);
+  if (!ids.length) { toast('대상을 선택해 주세요.'); return; }
+  loading(true, '웹앱 잠금 해제 중…');
+  api('releaseClaims', { ids: ids }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    toast('잠금 해제 ' + r.count + '건 — 이제 기존 자동화가 처리할 수 있습니다.', 4200);
+    reloadPo();
+  });
+}
+
+/* =====================================================================
+ * 2. 거래명세표 — 거래처 검색
+ * ===================================================================== */
+function searchClients(){
+  $('clientList').innerHTML = '<div class="empty"><span class="ico">⏳</span>검색 중…</div>';
+  api('searchClients', { days: S.windowDays, q: $('stmtClientQ').value.trim() }, function(r){
+    if (!r || !r.ok) { $('clientList').innerHTML = '<div class="empty"><span class="ico">⚠</span>' + esc(r && r.error) + '</div>'; return; }
+    S.clients = r.clients || [];
+    renderClients();
+  });
+}
+
+function renderClients(){
+  var h = '';
+  if (!S.clients.length) {
+    h = '<div class="empty"><span class="ico">🔎</span>해당 기간에 거래처가 없습니다.<br>'
+      + '<span class="mini">기간을 늘려보세요 (90일 / 60일 / 30일)</span></div>';
+  }
+  S.clients.forEach(function(c, i){
+    var on = (S.clientKey && c.key === S.clientKey);
+    var mail = (c.emails && c.emails.length)
+      ? '<span class="pill ok">메일 ' + c.emails.length + '</span>'
+      : '<span class="pill warn">메일 없음</span>';
+    h += '<div class="listItem' + (on ? ' sel' : '') + '" onclick="pickClient(' + i + ')">'
+      +  '<div class="chk">' + (on ? '✓' : '') + '</div>'
+      +  '<div class="grow">'
+      +    '<div class="liTop"><span class="liTitle">' + esc(c.name) + '</span>' + mail + '</div>'
+      +    '<div class="liMeta">페이지 <b>' + c.count + '건</b>'
+      +      ' · 미발송 <b>' + c.unsent + '</b>'
+      +      (c.lastDelivery ? ' · 최근 납품일 <b>' + esc(c.lastDelivery) + '</b>' : '')
+      +      (c.emails && c.emails.length ? '<br>' + esc(c.emails.join(', ')) : '')
+      +    '</div>'
+      +  '</div></div>';
+  });
+  $('clientList').innerHTML = h;
+}
+
+function pickClient(i){
+  var c = S.clients[i];
+  S.clientKey = c.key; S.clientName = c.name;
+  renderClients();
+  loadClientPages();
+}
+
+function loadClientPages(){
+  if (!S.clientKey) { $('stmtList').innerHTML = '<div class="empty"><span class="ico">👈</span>위에서 거래처를 선택하세요.</div>'; return; }
   $('stmtList').innerHTML = '<div class="empty"><span class="ico">⏳</span>불러오는 중…</div>';
-  api('listStmt', {}, function(r){
+  api('listClientPages', { key: S.clientKey, days: S.windowDays }, function(r){
     if (!r || !r.ok) { $('stmtList').innerHTML = '<div class="empty"><span class="ico">⚠</span>' + esc(r && r.error) + '</div>'; return; }
-    S.stmt = r.groups || [];
+    S.stmt = r.rows || [];
     S.selStmt = {};
     renderStmt();
   });
@@ -496,41 +782,72 @@ function reloadStmt(){
 function renderStmt(){
   var h = '';
   if (!S.stmt.length) {
-    h = '<div class="empty"><span class="ico">📭</span>명세표 대상이 없습니다.<br><span class="mini">노션에서 「명세표발행」 체크 후 새로고침</span></div>';
+    h = '<div class="empty"><span class="ico">📭</span>' + esc(S.clientName || '') + ' 의 최근 ' + S.windowDays + '일 페이지가 없습니다.</div>';
   }
-  S.stmt.forEach(function(g, i){
-    var on = !!S.selStmt[g.key];
-    var mailPill = (g.emails && g.emails.length)
-      ? '<span class="pill ok">거래처 메일 ' + g.emails.length + '</span>'
-      : '<span class="pill warn">메일 없음</span>';
-    h += '<div class="listItem' + (on ? ' sel' : '') + '" onclick="toggleStmt(' + i + ')">'
+  S.stmt.forEach(function(it, i){
+    var on = !!S.selStmt[it.pageId];
+    var ro = !!it.sent;
+    var cls = 'listItem' + (on ? ' sel' : '') + (ro ? ' readonly' : '') + (it.webctrl ? ' locked' : '');
+    var badges = '';
+    badges += '<span class="pill ' + (it.sent ? 'ok' : 'gray') + '">명세표발송여부 ' + (it.sent ? '✔' : '✘') + '</span>';
+    badges += '<span class="pill ' + (it.issued ? 'blue' : 'gray') + '">명세표발행 ' + (it.issued ? '✔' : '✘') + '</span>';
+    if (it.waiting) badges += '<span class="pill warn">거래처발송대기 ✔</span>';
+    if (it.webctrl) badges += '<span class="pill warn">웹앱 잠금</span>';
+    if (!it.shipOut) badges += '<span class="pill bad">출고여부 ✘</span>';
+
+    h += '<div class="' + cls + '" onclick="toggleStmt(' + i + ')">'
       +  '<div class="chk">' + (on ? '✓' : '') + '</div>'
       +  '<div class="grow">'
-      +    '<div class="liTop"><span class="liTitle">' + esc(g.clientName) + '</span>' + mailPill + '</div>'
-      +    '<div class="liMeta">납품일자 <b>' + esc(g.deliveryDate || '미입력') + '</b> · 품목 <b>' + g.pages.length + '</b>건'
-      +      ' · 수량 <b>' + comma(g.totalQty) + '</b> · 금액 <b>' + comma(g.totalAmount) + '</b>원'
-      +      '<br>' + g.pages.map(function(p){ return esc(p.spec || '-') + '×' + comma(p.qty); }).join(' / ')
-      +      (g.memo ? '<br><span style="color:#a8630a">' + esc(g.memo) + '</span>' : '')
+      +    '<div class="liTop"><span class="liTitle">' + esc(it.spec || it.title || '(규격 없음)') + '</span>'
+      +      '<span class="pill blue">' + (it.deliveryDate ? esc(it.deliveryDate) : '납품일 미입력') + '</span></div>'
+      +    '<div class="liMeta">수량 <b>' + comma(it.qty) + '</b> · 금액 <b>' + comma(it.amount) + '</b>원'
+      +      (it.deliveryType ? ' · 납품형태 <b>' + esc(it.deliveryType) + '</b>' : '')
+      +      (it.manageNo ? '<br>관리번호 ' + esc(it.manageNo) : '')
+      +      (it.emails && it.emails.length ? '<br>메일 ' + esc(it.emails.join(', ')) : '<br><span style="color:#a8630a">거래처 메일 없음</span>')
+      +    '</div>'
+      +    '<div class="badgeRow">' + badges + '</div>'
+      +    '<div style="margin-top:8px">'
+      +      '<button class="btn ghost sm" onclick="event.stopPropagation();previewOneStmt(' + i + ')">미리보기만</button>'
       +    '</div>'
       +  '</div></div>';
   });
   $('stmtList').innerHTML = h;
-  $('stmtCount').textContent = S.stmt.length + '건';
+  $('stmtPageCount').textContent = S.stmt.length + '건';
   updateBar();
 }
+
 function toggleStmt(i){
-  var k = S.stmt[i].key;
-  if (S.selStmt[k]) delete S.selStmt[k]; else S.selStmt[k] = 1;
+  var it = S.stmt[i];
+  if (it.sent) { toast('이미 발송된 건은 미리보기 전용입니다. 「미리보기만」 버튼을 쓰세요.', 3800); return; }
+  if (S.selStmt[it.pageId]) delete S.selStmt[it.pageId]; else S.selStmt[it.pageId] = 1;
   renderStmt();
 }
 
 function selAll(which){
   if (which === 'po') { S.po.forEach(function(x){ S.selPo[x.pageId] = 1; }); renderPo(); }
-  else { S.stmt.forEach(function(x){ S.selStmt[x.key] = 1; }); renderStmt(); }
+  else {
+    S.stmt.forEach(function(x){ if (!x.sent) S.selStmt[x.pageId] = 1; });
+    renderStmt();
+    toast('발송 완료 건은 선택에서 제외했습니다.', 3000);
+  }
 }
 function selNone(which){
   if (which === 'po') { S.selPo = {}; renderPo(); }
   else { S.selStmt = {}; renderStmt(); }
+}
+
+function stmtSetIssue(on){
+  var ids = Object.keys(S.selStmt);
+  if (!ids.length) { toast('대상을 선택해 주세요.'); return; }
+  loading(true, on ? '「명세표발행」 체크 + 웹앱 잠금 중…' : '「명세표발행」 체크 해제 중…');
+  api('setStmtIssue', { ids: ids, on: !!on }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    var msg = r.note || '완료';
+    if (r.blocked && r.blocked.length) msg += ' (이미 발송된 ' + r.blocked.length + '건 제외)';
+    toast(msg, 4200);
+    loadClientPages();
+  });
 }
 
 /* ---------- PDF 뷰어 ---------- */
@@ -538,6 +855,7 @@ function pdfModal(title, base64, fileName, infoHtml){
   var bin = atob(base64), arr = new Uint8Array(bin.length);
   for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
   var blob = new Blob([arr], { type: 'application/pdf' });
+  if (S._pdfUrl) { try { URL.revokeObjectURL(S._pdfUrl); } catch (e) {} }
   var url = URL.createObjectURL(blob);
   S._pdfUrl = url;
   var html = ''
@@ -567,7 +885,7 @@ function previewPo(){
     if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 4500); return; }
     S.lastPo = r;
     var info = '<div class="secTitle">발주서 정보</div>'
-      + '<div class="kv"><span>발주번호</span><span>' + esc(r.orderNo) + '</span></div>'
+      + '<div class="kv"><span>발주번호(임시)</span><span>' + esc(r.orderNo) + '</span></div>'
       + '<div class="kv"><span>납품희망일</span><span>' + esc(r.formattedDate) + '</span></div>'
       + '<div class="kv"><span>배송지</span><span>' + esc(r.clientName || '-') + '</span></div>'
       + '<div class="kv"><span>품목 / 수량</span><span>' + r.count + '건 / ' + comma(r.qty) + '</span></div>'
@@ -578,17 +896,24 @@ function previewPo(){
 }
 
 function previewStmt(){
-  var keys = Object.keys(S.selStmt);
-  if (!keys.length) { toast('대상을 선택해 주세요.'); return; }
-  var ids = [];
-  S.stmt.forEach(function(g){ if (S.selStmt[g.key]) g.pages.forEach(function(p){ ids.push(p.pageId); }); });
+  var ids = Object.keys(S.selStmt);
+  if (!ids.length) { toast('대상을 선택해 주세요.'); return; }
+  previewStmtIds(ids);
+}
+
+function previewOneStmt(i){
+  var it = S.stmt[i];
+  previewStmtIds([it.pageId]);
+}
+
+function previewStmtIds(ids){
   loading(true, '거래명세표 PDF 생성 중…');
   api('previewStmt', { ids: ids }, function(r){
     loading(false);
     if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 4500); return; }
     S.lastStmt = r;
     var info = '<div class="secTitle">명세표 정보</div>'
-      + '<div class="kv"><span>관리번호</span><span>' + esc(r.manageNo) + '</span></div>'
+      + '<div class="kv"><span>관리번호(임시)</span><span>' + esc(r.manageNo) + '</span></div>'
       + '<div class="kv"><span>거래처</span><span>' + esc(r.clientName) + '</span></div>'
       + '<div class="kv"><span>납품일자</span><span>' + esc(r.deliveryDate) + '</span></div>'
       + '<div class="kv"><span>수량 / 금액</span><span>' + comma(r.totalQty) + ' / ' + comma(r.totalAmount) + '원</span></div>'
@@ -601,16 +926,37 @@ function previewStmt(){
 /* ---------- 발송 ---------- */
 function doSend(){ if (S.tab === 'po') sendPo(); else sendStmt(); }
 
+function mailDefaults(){
+  var m = (S.state && S.state.mailDefaults) || {};
+  return {
+    poSubject: m.poSubject || '[푸로찜총판] 납품발주 요청 건 (납품희망일:{납품희망일})',
+    poBody: m.poBody || '안녕하세요 푸로찜 총판입니다.\n\n첨부와 같이 발주 요청드립니다.\n\n감사합니다.',
+    stmtSubject: m.stmtSubject || '[거래명세표] {관리번호} - {거래처}',
+    stmtBody: m.stmtBody || '안녕하세요 푸로찜 총판입니다.\n\n첨부와 같이 제품 납품에 대한 거래명세표를 파일로 전달드립니다.\n\n감사합니다.'
+  };
+}
+function fill(tpl, map){
+  var s = String(tpl || '');
+  Object.keys(map || {}).forEach(function(k){
+    s = s.split('{' + k + '}').join(String(map[k] == null ? '' : map[k]));
+  });
+  return s;
+}
+
 function sendPo(){
   var ids = Object.keys(S.selPo);
   if (!ids.length) { toast('대상을 선택해 주세요.'); return; }
 
   var orderNo = '';
-  var subject = '';
+  var fmt = '';
   if (S.lastPo && sameSet(ids, S.lastPo.pageIds)) {
     orderNo = S.lastPo.orderNo;
-    subject = '[푸로찜총판] 납품발주 요청 건 (납품희망일:' + (S.lastPo.formattedDate || '') + ')';
+    fmt = S.lastPo.formattedDate || '';
   }
+
+  var tpl = mailDefaults();
+  var subj = fill(tpl.poSubject, { '납품희망일': fmt, '발주번호': orderNo });
+  var body = fill(tpl.poBody, { '납품희망일': fmt, '발주번호': orderNo });
 
   var html = ''
     + '<div class="secTitle">받는 사람</div>'
@@ -620,9 +966,10 @@ function sendPo(){
     +   '<input type="text" id="poCc" value=""></div>'
     + '<div class="notice">발송하면 노션에서 <b>발주 ✘</b> / <b>발주서발송여부 ✔</b> / <b>발주관리번호 기록</b> 으로 '
     + '기존 자동화와 <b>완전히 동일하게</b> 마감되어 이중발송이 차단됩니다.</div>'
-    + '<div class="secTitle">메일 내용</div>'
-    + '<div class="field"><label>제목</label><input type="text" id="poSubject" value="' + esc(subject) + '"></div>'
-    + '<div class="field"><label>본문</label><textarea id="poBody" rows="4">안녕하세요 푸로찜 총판입니다.\n\n첨부와 같이 발주 요청드립니다.\n\n감사합니다.</textarea></div>'
+    + '<div class="secTitle">메일 내용 (여기서 바로 수정 가능)</div>'
+    + '<div class="field"><label>제목</label><input type="text" id="poSubject" value="' + esc(subj) + '"></div>'
+    + '<div class="field"><label>본문</label><textarea id="poBody" rows="6">' + esc(body) + '</textarea></div>'
+    + '<div class="mini">이 창의 수정은 <b>이번 발송에만</b> 적용됩니다. 기본값을 바꾸려면 「설정 → 메일 기본 문구」.</div>'
     + '<button class="btn" style="margin-top:12px" onclick="confirmSendPo(\'' + esc(orderNo) + '\')">지금 발송</button>';
   openModal('발주서 메일 발송', html);
 }
@@ -648,17 +995,28 @@ function confirmSendPo(orderNo){
 }
 
 function sendStmt(){
-  var keys = Object.keys(S.selStmt);
-  if (!keys.length) { toast('대상을 선택해 주세요.'); return; }
+  var ids = Object.keys(S.selStmt);
+  if (!ids.length) { toast('대상을 선택해 주세요.'); return; }
 
-  var g = null;
-  S.stmt.forEach(function(x){ if (S.selStmt[x.key]) g = x; });
-  var hasMail = g && g.emails && g.emails.length;
+  var emails = [], anySent = false;
+  S.stmt.forEach(function(x){
+    if (S.selStmt[x.pageId]) {
+      if (x.sent) anySent = true;
+      (x.emails || []).forEach(function(e){ if (emails.indexOf(e) === -1) emails.push(e); });
+    }
+  });
+  if (anySent) { toast('이미 발송된 건이 포함되어 있습니다. 선택에서 빼 주세요.', 4200); return; }
+
+  var hasMail = emails.length > 0;
+  var tpl = mailDefaults();
+  var manageNo = (S.lastStmt && S.lastStmt.pageIds && sameSet(ids, S.lastStmt.pageIds)) ? S.lastStmt.manageNo : '';
+  var subj = fill(tpl.stmtSubject, { '관리번호': manageNo, '거래처': S.clientName || '', '납품일자': '' });
+  var body = fill(tpl.stmtBody, { '관리번호': manageNo, '거래처': S.clientName || '', '납품일자': '' });
 
   var html = ''
     + '<div class="secTitle">거래처</div>'
-    + '<div class="kv"><span>거래처</span><span>' + esc(g ? g.clientName : '-') + '</span></div>'
-    + '<div class="kv"><span>거래처 메일</span><span>' + (hasMail ? esc(g.emails.join(', ')) : '<span style="color:#b3261e">없음</span>') + '</span></div>'
+    + '<div class="kv"><span>거래처</span><span>' + esc(S.clientName || '-') + '</span></div>'
+    + '<div class="kv"><span>거래처 메일</span><span>' + (hasMail ? esc(emails.join(', ')) : '<span style="color:#b3261e">없음</span>') + '</span></div>'
     + '<div class="secTitle">발송 방식</div>'
     + '<div class="sw"><input type="checkbox" id="stToClient" ' + (hasMail ? 'checked' : 'disabled') + '>'
     +   '<div><div class="t">거래처로 발송</div><div class="d">거래처 메일 주소로 명세표 PDF 발송</div></div></div>'
@@ -666,8 +1024,10 @@ function sendStmt(){
     +   '<div><div class="t">본사(대표)에게도 발송</div><div class="d">' + esc(S.state && S.state.hqEmail || '') + '</div></div></div>'
     + '<div class="sw"><input type="checkbox" id="stMark">'
     +   '<div><div class="t">거래처 미발송 시 완료 처리</div>'
-    +   '<div class="d">체크 안 하면 「거래처발송대기」로 남아 기존 자동감시가 이어받습니다</div></div></div>'
-    + '<div class="notice">거래처 발송 시 <b>명세표발행 ✘ / 명세표발송여부 ✔ / 거래처발송대기 ✘</b> 로 기존 자동화와 동일하게 마감됩니다.</div>'
+    +   '<div class="d">체크 안 하면 「거래처발송대기」로 남아 자동감시가 이어받습니다</div></div></div>'
+    + '<div class="secTitle">메일 내용 (여기서 바로 수정 가능)</div>'
+    + '<div class="field"><label>제목</label><input type="text" id="stSubject" value="' + esc(subj) + '"></div>'
+    + '<div class="field"><label>본문</label><textarea id="stBody" rows="6">' + esc(body) + '</textarea></div>'
     + '<button class="btn" style="margin-top:12px" onclick="confirmSendStmt()">지금 발송</button>';
   openModal('거래명세표 메일 발송', html);
 }
@@ -676,12 +1036,13 @@ function confirmSendStmt(){
   var opts = {
     toClient: $('stToClient').checked,
     toSelf: $('stToSelf').checked,
-    markDone: $('stMark').checked
+    markDone: $('stMark').checked,
+    subject: $('stSubject').value.trim(),
+    body: $('stBody').value
   };
-  if (!opts.toClient && !opts.toSelf) { toast('발송 대상을 하나 이상 선택해 주세요.'); return; }
+  if (!opts.toClient && !opts.toSelf && !opts.markDone) { toast('발송 대상을 하나 이상 선택해 주세요.'); return; }
 
-  var ids = [];
-  S.stmt.forEach(function(g){ if (S.selStmt[g.key]) g.pages.forEach(function(p){ ids.push(p.pageId); }); });
+  var ids = Object.keys(S.selStmt);
   var manageNo = (S.lastStmt && S.lastStmt.pageIds && sameSet(ids, S.lastStmt.pageIds)) ? S.lastStmt.manageNo : '';
 
   closeModal();
@@ -695,7 +1056,7 @@ function confirmSendStmt(){
       + '<div class="kv"><span>수신</span><span>' + esc(r.to) + '</span></div>'
       + '<div class="kv"><span>노션 상태</span><span>' + esc(r.state) + '</span></div>'
       + '<div class="notice" style="margin-top:12px">새로고침하여 목록에서 사라졌는지 확인하세요.</div>');
-    reloadStmt();
+    loadClientPages();
   });
 }
 
@@ -705,7 +1066,163 @@ function sameSet(a, b){
   return b.every(function(x){ return !!s[x]; });
 }
 
-/* ---------- 설정 ---------- */
+/* =====================================================================
+ * 3. 납품형태 자동발송
+ * ===================================================================== */
+function loadAuto(){
+  $('autoList').innerHTML = '불러오는 중…';
+  api('listAuto', { days: S.windowDays }, function(r){
+    if (!r || !r.ok) { $('autoList').innerHTML = '<span style="color:#b3261e">' + esc(r && r.error) + '</span>'; return; }
+    var rows = r.rows || [];
+    if (!rows.length) { $('autoList').innerHTML = '자동발송 대상이 없습니다.'; return; }
+    var h = '<div class="mini" style="margin-bottom:6px">주체: <b>' + esc(r.owner) + '</b> · 대상 ' + rows.length + '건</div>';
+    rows.slice(0, 20).forEach(function(x){
+      h += '<div class="kv"><span>' + esc(x.client || '(거래처 미지정)')
+        + '<br><span style="font-size:11px;color:#6b7a90">' + esc(x.deliveryType) + ' · ' + esc(x.deliveryDate || '납품일 없음')
+        + (x.emails && x.emails.length ? '' : ' · 메일없음') + '</span></span>'
+        + '<span>' + esc(x.stage) + (x.webctrl ? '<br><span class="pill warn">웹앱</span>' : '') + '</span></div>';
+    });
+    if (rows.length > 20) h += '<div class="mini">… 외 ' + (rows.length - 20) + '건</div>';
+    $('autoList').innerHTML = h;
+  });
+}
+
+function runAuto(dry){
+  loading(true, dry ? '모의실행 중…' : '자동발송 실행 중…');
+  api('runAutoNow', { dry: !!dry }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 6500); return; }
+    var s = r.summary || {};
+    openModal(dry ? '자동발송 모의실행 결과' : '자동발송 실행 결과', ''
+      + '<div class="kv"><span>검사</span><span>' + (s.scanned || 0) + '건</span></div>'
+      + '<div class="kv"><span>명세표발행 자동체크</span><span>' + (s.checked || 0) + '건</span></div>'
+      + '<div class="kv"><span>거래처 발송</span><span>' + (s.sent || 0) + '건</span></div>'
+      + '<div class="kv"><span>대기</span><span>' + (s.waiting || 0) + '건</span></div>'
+      + '<div class="kv"><span>만료(취소)</span><span>' + (s.expired || 0) + '건</span></div>'
+      + '<div class="kv"><span>건너뜀</span><span>' + (s.skipped || 0) + '건</span></div>'
+      + '<div class="kv"><span>실패</span><span>' + (s.failed || 0) + '건</span></div>'
+      + (dry ? '<div class="warnBox" style="margin-top:12px">모의실행은 <b>아무것도 바꾸지 않습니다.</b></div>' : ''));
+    loadAuto();
+  });
+}
+
+/* =====================================================================
+ * 4. 발송이력
+ * ===================================================================== */
+function todayStr(){
+  var d = new Date();
+  var m = ('0' + (d.getMonth() + 1)).slice(-2);
+  var day = ('0' + d.getDate()).slice(-2);
+  return d.getFullYear() + '-' + m + '-' + day;
+}
+function addDays(base, n){
+  var d = new Date(base + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  var m = ('0' + (d.getMonth() + 1)).slice(-2);
+  var day = ('0' + d.getDate()).slice(-2);
+  return d.getFullYear() + '-' + m + '-' + day;
+}
+
+function quickRange(kind){
+  var t = todayStr();
+  if (kind === 'today') { $('hFrom').value = t; $('hTo').value = t; }
+  else if (kind === '7d') { $('hFrom').value = addDays(t, -6); $('hTo').value = t; }
+  else if (kind === '30d') { $('hFrom').value = addDays(t, -29); $('hTo').value = t; }
+  else if (kind === 'month') {
+    $('hFrom').value = t.slice(0, 7) + '-01'; $('hTo').value = t;
+  } else { $('hFrom').value = ''; $('hTo').value = ''; }
+  loadHistory();
+}
+
+function loadHistory(){
+  var f = {
+    kind: $('hKind').value,
+    status: $('hStatus').value,
+    from: $('hFrom').value,
+    to: $('hTo').value,
+    q: $('hQ').value.trim()
+  };
+  $('histBody').innerHTML = '<tr><td colspan="8" class="mini">불러오는 중…</td></tr>';
+  api('listHistory', { filter: f }, function(r){
+    if (!r || !r.ok) { $('histBody').innerHTML = '<tr><td colspan="8" class="mini" style="color:#b3261e">' + esc(r && r.error) + '</td></tr>'; return; }
+    S.hist = r.rows || [];
+    S.histSel = {};
+    renderHist();
+  });
+}
+
+function renderHist(){
+  var h = '';
+  if (!S.hist.length) {
+    h = '<tr><td colspan="8" class="mini">조건에 맞는 이력이 없습니다.</td></tr>';
+  }
+  S.hist.forEach(function(x, i){
+    var on = !!S.histSel[x.row];
+    var pill = 'pill ';
+    if (x.status === '발송완료') pill += 'ok';
+    else if (x.status === '실패') pill += 'bad';
+    else if (x.status === '대기') pill += 'warn';
+    else pill += 'gray';
+
+    h += '<tr class="' + (on ? 'rowsel' : '') + '">'
+      + '<td class="c"><input class="histChk" type="checkbox" ' + (on ? 'checked' : '') + ' onclick="histToggle(' + x.row + ')"></td>'
+      + '<td class="c">' + esc(String(x.at).slice(5, 16)) + '</td>'
+      + '<td class="c">' + esc(x.kind) + '</td>'
+      + '<td class="c"><span class="' + pill + '">' + esc(x.status) + '</span></td>'
+      + '<td class="c">' + esc(x.manageNo) + '</td>'
+      + '<td>' + esc(x.client) + '</td>'
+      + '<td>' + esc(x.to) + '</td>'
+      + '<td>' + esc(x.memo || x.message) + '</td>'
+      + '</tr>';
+  });
+  $('histBody').innerHTML = h;
+  $('hCount').textContent = S.hist.length + '건';
+}
+
+function histToggle(row){
+  if (S.histSel[row]) delete S.histSel[row]; else S.histSel[row] = 1;
+  renderHist();
+}
+function histSelectAll(on){
+  S.histSel = {};
+  if (on) S.hist.forEach(function(x){ S.histSel[x.row] = 1; });
+  renderHist();
+}
+
+function histDeleteSelected(){
+  var rows = Object.keys(S.histSel).map(Number);
+  if (!rows.length) { toast('삭제할 이력을 선택해 주세요.'); return; }
+  if (!confirm('선택한 ' + rows.length + '건의 이력을 삭제할까요?\n(구글시트의 행이 실제로 삭제됩니다)')) return;
+  loading(true, '이력 삭제 중…');
+  api('deleteHistory', { rows: rows }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    toast(r.deleted + '건 삭제 완료', 3200);
+    loadHistory();
+  });
+}
+
+function histDeleteAll(){
+  var f = {
+    kind: $('hKind').value,
+    status: $('hStatus').value,
+    from: $('hFrom').value,
+    to: $('hTo').value,
+    q: $('hQ').value.trim()
+  };
+  if (!confirm('지금 화면에 표시된 이력 ' + S.hist.length + '건을 모두 삭제할까요?\n(되돌릴 수 없습니다)')) return;
+  loading(true, '표시된 이력 삭제 중…');
+  api('deleteHistoryByFilter', { filter: f }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    toast(r.deleted + '건 삭제 완료', 3200);
+    loadHistory();
+  });
+}
+
+/* =====================================================================
+ * 5. 설정
+ * ===================================================================== */
 function fillSettings(){
   var st = S.state;
   if (!st) return;
@@ -719,6 +1236,40 @@ function fillSettings(){
   $('legacyInfo').innerHTML =
       '발주 Config : ' + (lg.poOk ? ('<b>' + esc(lg.poYear) + '</b> / <b>' + esc(lg.poSeq) + '</b>') : '<span style="color:#b3261e">연결 안 됨</span>')
     + '<br>명세표 Config : ' + (lg.stmtOk ? ('<b>' + esc(lg.stmtDate) + '</b> / <b>' + esc(lg.stmtSeq) + '</b>') : '<span style="color:#b3261e">연결 안 됨</span>');
+}
+
+function fillMailTpl(){
+  var t = mailDefaults();
+  $('tplPoSubject').value = t.poSubject;
+  $('tplPoBody').value = t.poBody;
+  $('tplStmtSubject').value = t.stmtSubject;
+  $('tplStmtBody').value = t.stmtBody;
+}
+
+function saveMailTpl(){
+  var mail = {
+    poSubject: $('tplPoSubject').value,
+    poBody: $('tplPoBody').value,
+    stmtSubject: $('tplStmtSubject').value,
+    stmtBody: $('tplStmtBody').value
+  };
+  loading(true, '문구 저장 중…');
+  api('saveSettings', { mail: mail }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    toast('메일 기본 문구를 저장했습니다.', 3000);
+    loadState();
+  });
+}
+
+function renderOwner(){
+  var st = S.state || {};
+  var owner = st.autoOwner || '-';
+  $('autoOwnerPill').textContent = owner;
+  $('autoOwnerPill').className = 'pill ' + (owner === 'webapp' ? 'ok' : 'gray');
+  $('autoOwnerNote').innerHTML = (owner === 'webapp')
+    ? '지금은 <b>웹앱</b>이 자동발송을 담당합니다. (기존 자동화 트리거는 꺼져 있어야 합니다)'
+    : '지금은 <b>기존 자동화(legacy)</b>가 자동발송을 담당합니다. 웹앱의 「지금 실행」은 차단됩니다.';
 }
 
 function renderBook(){
@@ -747,8 +1298,14 @@ function saveSettings(){
     stmtSeq: Number($('cfgStmtSeq').value || 0)
   };
   var clean = S.book.filter(function(r){ return String(r.name || '').trim() !== ''; });
+  var mail = {
+    poSubject: $('tplPoSubject').value,
+    poBody: $('tplPoBody').value,
+    stmtSubject: $('tplStmtSubject').value,
+    stmtBody: $('tplStmtBody').value
+  };
   loading(true, '저장 중…');
-  api('saveSettings', { config: config, addressBook: clean }, function(r){
+  api('saveSettings', { config: config, addressBook: clean, mail: mail }, function(r){
     loading(false);
     if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
     if (S.state) { S.state.config = r.config; S.state.legacy = r.legacy; }
@@ -807,96 +1364,107 @@ function pingServer(){
   });
 }
 
-/* ---------- 사용 매뉴얼 (웹앱 내장) ---------- */
+/* =====================================================================
+ * 6. 사용 매뉴얼 (웹앱 내장)
+ * ===================================================================== */
 function openManual(){
   var h = ''
   + '<div class="manual">'
 
-  + '<h4>0. 준비물 3가지</h4>'
+  + '<h4>0. 한눈에 보는 구조</h4>'
+  + '<table>'
+  + '<tr><th>역할</th><th>무엇을 하나</th></tr>'
+  + '<tr><td>신규 GAS (Code.gs)</td><td>웹앱 API · PDF 생성 · 메일 발송 · 관리번호 중앙 발급 · 발송이력</td></tr>'
+  + '<tr><td>Index.html (GitHub Pages)</td><td>폰에서 보는 화면. GAS /exec 로 JSON 호출</td></tr>'
+  + '<tr><td>기존 「발주서」 자동화</td><td>그대로 유지. 단 「웹앱제어」가 켜진 페이지는 건너뜀</td></tr>'
+  + '<tr><td>기존 「거래명세표」 자동화</td><td>그대로 유지. 단 「웹앱제어」가 켜진 페이지는 건너뜀</td></tr>'
+  + '</table>'
+  + '<div class="notice">핵심 장치: 노션 「푸로찜 입출고 DB」에 <b>체크박스 속성 「웹앱제어」</b>를 하나 만듭니다. '
+  + '웹앱이 페이지를 잡으면 이 체크가 켜지고, 기존 자동화는 그 페이지만 <b>조용히 건너뜁니다</b>. '
+  + '웹앱이 잡지 않은 페이지는 지금과 <b>100% 동일하게</b> 동작합니다.</div>'
+
+  + '<h4>1. 발주서 – 3단계</h4>'
   + '<ul>'
-  + '<li><b>① GAS 웹앱 URL</b> — Apps Script 배포 → 웹앱 → 액세스 권한 <code>모든 사용자</code> → 배포 후 나온 <code>/exec</code> 주소</li>'
-  + '<li><b>② 신규 스프레드시트</b> — <code>Config</code>(발주 번호), <code>STMT_Config</code>(명세표 번호), '
-  + '<code>AddressBook</code>, <code>PO_Log</code>, <code>STMT_Log</code> 는 자동 생성. '
-  + '<code>PO_Template</code>·<code>STMT_Template</code> 는 기존 시트에서 <b>복사</b>해서 넣습니다.</li>'
-  + '<li><b>③ API KEY</b>(권장) — GAS 스크립트 속성 <code>API_KEY</code> 에 값을 넣으면, 그 값을 아는 사람만 실행할 수 있습니다.</li>'
+  + '<li><b>① 목록</b> — 조건: <code>발주관리번호=비어있음</code> + <code>발주서발송여부≠체크</code> + <code>출고여부≠True</code>. '
+  + '「발주」 체크 여부와 무관하게 나옵니다(웹앱이 먼저 잡기 위해).</li>'
+  + '<li><b>② 「발주 체크」</b> — 노션 <code>발주=✔</code> + <code>웹앱제어=✔</code> 를 동시에 켭니다. '
+  + '이 순간부터 기존 발주서 자동화는 이 페이지를 <b>건너뜁니다</b> → 회사 메일이 오지 않습니다.</li>'
+  + '<li><b>③ 미리보기 → 메일 발송</b> — PDF를 눈으로 확인하고, 제목·본문을 그 자리에서 고쳐 본사로 보냅니다. '
+  + '발송 시 노션 <code>발주서발송여부=✔</code>, <code>발주=✘</code>, <code>발주관리번호=번호</code>, <code>관리번호=번호</code>, <code>웹앱제어=✘</code>.</li>'
   + '</ul>'
-  + '<div class="warnBox">이 웹앱은 GitHub Pages 에서 열립니다. 그래서 <code>google.script.run</code> 을 쓰지 않고 '
-  + '<b>fetch POST(text/plain)</b> 로 GAS 를 호출합니다. 이 방식이 CORS 사전요청(preflight)을 만들지 않아 가장 안전합니다.</div>'
+  + '<div class="warnBox">발주번호는 <b>미리보기에서 소비되지 않습니다.</b> 실제 발송 때만 확정됩니다.</div>'
 
-  + '<h4>1. 이 웹앱이 하는 일</h4>'
-  + '<p>노션 「푸로찜 입출고 DB」를 읽어 <b>발주서</b>와 <b>거래명세표</b>를 PDF 로 만들고, 미리보기로 확인한 뒤 메일로 보냅니다. '
-  + '발송하면 기존 GAS 자동화와 <b>완전히 동일한 규칙</b>으로 노션 속성이 갱신됩니다. '
-  + '즉 웹앱을 쓰든 기존 자동화를 쓰든 <b>이중 발송이 생기지 않습니다.</b></p>'
-
-  + '<h4>2. 발주서 흐름</h4>'
+  + '<h4>2. 거래명세표 – 수동 경로(3단계)</h4>'
   + '<ul>'
-  + '<li>대상 조건: <code>발주=체크</code> + <code>발주관리번호=비어있음</code> + <code>출고여부≠True</code> + <code>발주서발송여부≠체크</code></li>'
-  + '<li>미리보기 → 발주번호가 <b>임시로만</b> 표시됩니다. <b>기록되지 않습니다.</b></li>'
-  + '<li>발송 시 노션 갱신: <code>발주서발송여부=✔</code>, <code>발주=✘</code>, <code>발주관리번호=번호</code>, <code>관리번호=번호</code></li>'
-  + '<li>이 체크 때문에 같은 건이 두 번 발송되지 않습니다(기존 자동화와 동일한 방어).</li>'
-  + '<li>기록처: <code>PO_Log</code> (실행일시 / 발주번호 / 납품희망일 / 품목수 / 결과 / 메세지 / 수량(Box) / 총량(KG) / 납품장소)</li>'
+  + '<li><b>① 거래처 검색</b> — 최근 <code>90일</code> 내 생성된 페이지에서 거래처명/이메일로 찾습니다. 30/60/90일로 조절 가능.</li>'
+  + '<li><b>② 페이지 선택 → 「명세표발행 체크」</b> — <code>명세표발행=✔</code> + <code>웹앱제어=✔</code>. '
+  + '이미 <code>명세표발송여부=✔</code> 인 건은 <b>미리보기 전용</b>입니다.</li>'
+  + '<li><b>③ 미리보기 → 메일 발송</b> — 거래처 메일이 있으면 거래처로, 없으면 본사로만(또는 완료처리). 본문 수정 가능.</li>'
   + '</ul>'
+  + '<div class="notice">거래처로 보내면 기존 자동화와 동일하게 <code>명세표발송여부=✔</code> / <code>명세표발행=✘</code> / <code>거래처발송대기=✘</code> 로 마감됩니다.</div>'
 
-  + '<h4>3. 거래명세표 흐름</h4>'
-  + '<ul>'
-  + '<li>대상 조건: <code>명세표발행=체크</code> + <code>명세표발송여부=미체크</code> + <code>거래처발송대기=미체크</code> + <code>출고여부=True</code></li>'
-  + '<li>같은 거래처 건은 자동으로 1장에 묶입니다 (최대 4줄).</li>'
-  + '<li><b>거래처 메일이 있을 때</b> → 거래처로 발송 → <code>명세표발송여부=✔</code>, <code>명세표발행=✘</code>, <code>거래처발송대기=✘</code></li>'
-  + '<li><b>거래처 메일이 없을 때</b> → 기본은 <code>거래처발송대기=✔</code> 로 남겨 <b>기존 자동감시</b>가 이어받습니다. '
-  + '본사만 받고 끝내려면 「거래처 미발송 시 완료 처리」를 체크하세요.</li>'
-  + '<li>본사(대표)에게도 받고 싶으면 「본사에게도 발송」을 체크하세요.</li>'
-  + '<li>기록처: <code>STMT_Log</code> (날짜 / 관리번호 / 거래처 / 결과 / 판매금 / 박스수량 / 거래처 발송 이메일주소 / '
-  + '거래처 메일 발송결과 / 납품일자 / 실제 발송된 거래처 이메일 / 이메일 발송날짜 / PO_Template 관리번호 / 규격 / 수량 / 단가 / 금액)</li>'
-  + '</ul>'
+  + '<h4>3. 납품형태 자동발송</h4>'
+  + '<p><code>납품형태</code>가 <b>택배 발송 / 본사 발송 / 택배 제2배송처 / 본사 제2배송처</b> 인 페이지를, '
+  + '<code>납품일자</code> 기준으로 <b>거래처 메일로만</b> 자동 발송합니다. (본사 메일 없음 — 메일함이 깨끗해집니다)</p>'
+  + '<table>'
+  + '<tr><th>납품일자</th><th>동작</th></tr>'
+  + '<tr><td>미입력</td><td>거래처발송대기 ✔ (다음 실행에서 재확인)</td></tr>'
+  + '<tr><td>미래 날짜</td><td>대기 (D-day 도달 시 발송)</td></tr>'
+  + '<tr><td>오늘 / 3일 이내 경과</td><td>거래처 즉시 발송</td></tr>'
+  + '<tr><td>4일 이상 경과</td><td>자동 만료(취소) — 발송하지 않음</td></tr>'
+  + '</table>'
+  + '<div class="warnBox"><b>겹침 방지</b> — 웹앱은 <b>「웹앱제어」가 켜진 페이지만</b> 처리합니다. '
+  + '그래서 기존 자동화와 같은 페이지를 동시에 잡을 수 없습니다. '
+  + '다만 자동발송까지 웹앱이 맡으려면 GAS 속성 <code>AUTO_SEND_OWNER=webapp</code> 으로 바꾸고 '
+  + '기존 「택배업체 거래명세표」의 트리거(<code>autoCheckStatementIssue</code>, <code>runDeliveryStatement</code>, '
+  + '<code>processWaitingDeliveries</code>)를 끄세요.</div>'
 
-  + '<h4>4. 관리번호 (중앙 발급)</h4>'
-  + '<p>신규 시트의 <code>Config</code>(발주) · <code>STMT_Config</code>(명세표) 가 <b>중앙 발급소</b>입니다. '
-  + '발급 전에 기존 시트의 Config 값도 함께 읽어 <b>더 큰 값 + 1</b> 로 만들고, 노션에 같은 번호가 이미 있으면 자동으로 +1 재시도합니다. '
-  + '발급 후에는 신규·기존 <b>양쪽 Config 에 동시에 기록</b>합니다.</p>'
-  + '<div class="warnBox">한계: Apps Script 의 <code>LockService</code> 는 <b>같은 프로젝트 안에서만</b> 유효합니다. '
-  + '기존 자동화가 동시에 번호를 뽑으면 1건 정도 번호가 겹칠 수 있습니다. '
-  + '그래서 <b>노션 중복검사</b>로 재발급하고, 최종 방어선은 <b>노션 속성(발주관리번호/명세표관리번호)</b> 입니다. '
-  + '번호가 가끔 건너뛰는 것은 정상이며 업무에 영향이 없습니다.</div>'
+  + '<h4>4. 발송이력</h4>'
+  + '<p>종류(발주서/거래명세표) · 상태(발송완료/대기/수동완료/실패/취소) · 시작일·종료일 · 검색어로 조회합니다. '
+  + '오늘 / 최근 7일 / 30일 / 이번달 버튼이 있습니다. 행을 선택해 <b>선택 삭제</b>, 또는 <b>표시된 이력 전체 삭제</b>가 됩니다.</p>'
 
-  + '<h4>5. AddressBook</h4>'
-  + '<p>신규 시트에서만 <b>편집</b>하고, 「설정 저장」을 누르면 기존 발주서 시트의 AddressBook 으로 <b>내보내기</b>됩니다. '
-  + '기존 GAS 의 AddressBook 은 조회 전용으로 두는 것이 안전합니다.</p>'
+  + '<h4>5. 관리번호 (중앙 발급)</h4>'
+  + '<p>신규 시트의 <code>Config</code>(발주) · <code>STMT_Config</code>(명세표)가 중앙 발급소입니다. '
+  + '발급 전에 기존 시트 Config도 함께 읽어 <b>더 큰 값 + 1</b>, 노션에 같은 번호가 있으면 자동 +1 재시도, '
+  + '발급 후 신규·기존 <b>양쪽에 동시 기록</b>합니다.</p>'
+  + '<div class="warnBox">LockService는 같은 프로젝트 안에서만 유효합니다. 기존 자동화와 초 단위로 겹치면 번호가 1건 겹칠 수 있어 '
+  + '<b>노션 중복검사</b>로 재발급합니다. 번호가 가끔 건너뛰는 것은 정상이며 업무에 지장이 없습니다.</div>'
 
   + '<h4>6. 매일 쓰는 순서</h4>'
   + '<ul>'
-  + '<li>① 노션에서 「발주」 또는 「명세표발행」 체크</li>'
-  + '<li>② 웹앱에서 새로고침 → 대상 선택</li>'
-  + '<li>③ 미리보기로 PDF 확인 (번호 소비 없음)</li>'
-  + '<li>④ 메일 발송 → 완료 창 확인 → 새로고침으로 목록에서 사라졌는지 확인</li>'
+  + '<li><b>발주</b> : 발주서 탭 → 새로고침 → 선택 → 「발주 체크」 → 미리보기 → 본사 발송</li>'
+  + '<li><b>명세표</b> : 거래명세표 탭 → 거래처 검색 → 페이지 선택 → 「명세표발행 체크」 → 미리보기 → 발송</li>'
+  + '<li><b>확인</b> : 발송이력 탭 → 오늘 → 발송완료/실패 확인</li>'
   + '</ul>'
 
   + '<h4>7. 문제가 생기면</h4>'
   + '<ul>'
-  + '<li><b>“GAS URL 미설정”</b> → 설정 탭에서 <code>/exec</code> 주소 입력 후 「연결 저장」</li>'
-  + '<li><b>“연결 실패”</b> → 배포 권한이 <code>모든 사용자</code>인지 확인. 저장 후 「연결 테스트」</li>'
-  + '<li><b>“STMT_Template 시트가 없습니다”</b> → 기존 명세표 시트의 템플릿을 이 문서로 복사</li>'
-  + '<li><b>“이미 발송된 항목…”</b> → 다른 곳(자동화)에서 먼저 발송됨. 새로고침 후 다시 선택</li>'
-  + '<li><b>PDF 가 안 보임</b> → 「새창 열기」 또는 「PDF 저장」 사용</li>'
-  + '<li><b>기존 자동화와 시간대 충돌</b> → 트리거 시간을 웹앱 사용 시간대와 겹치지 않게 조정</li>'
+  + '<li><b>「GAS URL 미설정」</b> → 설정 탭에서 <code>/exec</code> 주소 입력 후 「연결 저장」</li>'
+  + '<li><b>「연결 실패」</b> → 배포 액세스가 <code>모든 사용자</code>인지 확인 → 「연결 테스트」</li>'
+  + '<li><b>「STMT_Template 시트가 없습니다」</b> → 기존 명세표 시트의 템플릿을 이 문서로 복사</li>'
+  + '<li><b>회사 메일이 또 왔다</b> → 노션에 <code>웹앱제어</code> 속성이 있는지 확인. 없으면 기존 자동화가 잡습니다.</li>'
+  + '<li><b>페이지가 잠긴 채 남았다</b> → 설정 또는 시트 메뉴 「오래된 웹앱 잠금 정리」(24시간 기준)</li>'
+  + '<li><b>PDF가 안 보임</b> → 「새창 열기」 또는 「PDF 저장」</li>'
   + '</ul>'
 
-  + '<h4>8. 안전 원칙 (요약)</h4>'
+  + '<h4>8. 안전 원칙</h4>'
   + '<ul>'
   + '<li>기존 2개 자동화의 <b>트리거·메일·PDF·노션 갱신 로직은 그대로</b> 둡니다.</li>'
-  + '<li>신규 코드가 기존 시트에 쓰는 곳은 <b>딱 3곳</b>: AddressBook(A:C), 발주 Config(A1:B1), 명세표 Config(A2:B2).</li>'
+  + '<li>기존 시트에 쓰는 곳은 <b>딱 3곳</b>: AddressBook(A:C), 발주 Config(A1:B1), 명세표 Config(A2:B2).</li>'
   + '<li>그 3곳의 쓰기도 <b>실패하면 조용히 넘어갑니다</b>(본 작업을 막지 않음).</li>'
+  + '<li>기존 코드 변경은 <b>「웹앱제어 체크면 건너뛰기」 조건 1줄씩</b> 뿐입니다.</li>'
   + '</ul>'
 
-  + '<div class="warnBox" style="margin-top:14px">기존 2개 GAS 자동화는 <b>그대로 둡니다.</b> '
-  + '이 웹앱은 별도 스프레드시트에서 독립 실행되며, 기존 시트의 Config·AddressBook 외에는 아무것도 수정하지 않습니다.</div>'
+  + '<div class="warnBox" style="margin-top:14px">처음 한 번만: 노션 DB에 체크박스 속성 <code>웹앱제어</code> 를 추가하세요. '
+  + '이것 하나로 두 시스템이 절대 겹치지 않습니다.</div>'
   + '</div>';
   openModal('사용 매뉴얼', h);
 }
 
-/* ---------- 해시 라우팅(#po / #stmt / #set) ---------- */
+/* ---------- 해시 라우팅 ---------- */
 function applyHash(){
   var h = (location.hash || '').replace('#','');
-  if (h !== 'po' && h !== 'stmt' && h !== 'set') return;
+  if (h !== 'po' && h !== 'stmt' && h !== 'hist' && h !== 'set') return;
   var b = document.querySelector('.tab[data-tab="' + h + '"]');
   if (b) b.click();
 }
@@ -904,14 +1472,14 @@ function applyHash(){
 /* ---------- 시작 ---------- */
 loadConn();
 updateBar();
-if (S.gasUrl) { loadState(); reloadPo(); reloadStmt(); }
+setWindowLabel();
+if (S.gasUrl) { loadState(); reloadPo(); }
 else {
   $('poList').innerHTML = '<div class="empty"><span class="ico">🔌</span>먼저 「설정」 탭에서<br>GAS 웹앱 URL 을 입력해 주세요.</div>';
   $('stmtList').innerHTML = '<div class="empty"><span class="ico">🔌</span>먼저 「설정」 탭에서<br>GAS 웹앱 URL 을 입력해 주세요.</div>';
 }
 applyHash();
 window.addEventListener('hashchange', applyHash);
-
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
