@@ -492,7 +492,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbz9CEw0LE-oP11uJg2mrjrnSotMj_xql2fVtixwBMVsVLQ0GOcMcN6TixnxtzFLPf_J/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyqrJqitPDwCJzqfYiejmsxKRvpcj2RoNM-Bg0WjN1keY6CH2L-X3oF20RXg4zgA4fF/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -1014,8 +1014,13 @@ function sendPo(){
   }
 
   var tpl = mailDefaults();
-  var subj = fill(tpl.poSubject, { '납품희망일': fmt, '발주번호': orderNo });
-  var body = fill(tpl.poBody, { '납품희망일': fmt, '발주번호': orderNo });
+  /* v5.1: 미리보기를 생략했으면 납품희망일 토큰을 지우지 않고 서버로 전달합니다.
+     서버가 발주서 템플릿 F11의 실제 날짜로 마지막 치환을 수행합니다. */
+  var poTokens = fmt
+    ? { '납품희망일': fmt, '발주번호': orderNo }
+    : { '발주번호': orderNo };
+  var subj = fill(tpl.poSubject, poTokens);
+  var body = fill(tpl.poBody, poTokens);
 
   var html = ''
     + '<div class="secTitle">받는 사람</div>'
