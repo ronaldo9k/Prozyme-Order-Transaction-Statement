@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14203a">
-<title>푸로찜 발주·명세표</title>
+<title>푸로찜 발주·명세표 v7.0</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <style>
@@ -101,6 +101,16 @@
   .bookRow{display:grid;grid-template-columns:34px 1.1fr 1.6fr .9fr 32px;gap:6px;margin-bottom:6px}
   .bookRow .no{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--navy)}
   .bookRow input{padding:9px 8px;font-size:12.5px}
+  /* ★ v7.0: AddressBook 읽기전용 값 표시 (거래처·상세주소·연락처 — 클릭 수정 불가) */
+  .roCell{padding:9px 8px;font-size:12.5px;background:#f1f4f9;border:1px solid var(--line);
+    border-radius:8px;color:#5a6a82;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    cursor:not-allowed;user-select:none}
+  /* ★ v7.0: 관리번호(중앙 발급소) 읽기전용 + 개별 수정 버튼 */
+  .cfgRow{display:flex;gap:6px;align-items:stretch}
+  .cfgRow input{flex:1;min-width:0}
+  .cfgRow input.roInput{background:#f1f4f9;color:#5a6a82;cursor:not-allowed}
+  .cfgEditBtn{border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:8px;
+    font-size:11px;font-weight:700;padding:0 8px;cursor:pointer;white-space:nowrap}
   .delBtn{border:1px solid var(--line);background:#fff;color:#b3261e;border-radius:8px;
     font-size:14px;cursor:pointer;padding:0}
   .bar{
@@ -331,7 +341,8 @@
       <div class="mini" style="margin-bottom:8px">A열: 제2배송지 거래처 / B열: 상세주소 / C열: 연락처<br>
         이 표는 신규 GAS 시트의 <b>실시간 값</b>입니다. 아래에서 고치면 <b>기존 시트 AddressBook 에도 즉시 반영</b>됩니다.</div>
       <div class="notice" style="margin-bottom:8px">
-        <b>🔒 안내</b> — 「+ 행 추가」 와 행 삭제 「✕」 버튼은 실수 방지를 위해 <b>비밀번호(기본 1234)</b> 확인 후 동작합니다.<br>
+        <b>🔒 안내</b> — 「거래처 · 상세주소 · 연락처」 값은 <b>읽기 전용</b>입니다 (클릭해서 수정할 수 없습니다).
+        유일한 수정 방법은 「✕ 삭제」 후 「+ 행 추가」 입니다. 두 버튼 모두 <b>비밀번호(기본 1234)</b> 확인 후 동작합니다.<br>
         비밀번호 변경은 상단 <b>「🔒 PW」</b> 버튼에서 할 수 있습니다.
       </div>
       <div class="bookRow" style="font-size:10.5px;font-weight:700;color:var(--sub);margin-bottom:3px">
@@ -344,7 +355,8 @@
         <button class="btn dark sm" onclick="saveSettings()">저장 + 기존시트 반영</button>
       </div>
       <div class="notice" style="margin-top:8px">
-        행을 추가·삭제·수정하면 <b>자동으로 저장</b>됩니다(약 1초 뒤). 「저장」 버튼은 즉시 반영용입니다.
+        행을 <b>추가·삭제</b>하면 자동으로 저장됩니다(약 1초 뒤). 「저장」 버튼은 즉시 반영용입니다.
+        <b>★ v7.0: 거래처·상세주소·연락처 값은 잠겨 있어 직접 수정할 수 없습니다</b> — 삭제 후 행 추가로만 교체하세요.
       </div>
     </div>
   </section>
@@ -413,13 +425,24 @@
   <section class="panel" id="p-set">
     <div class="card">
       <h2><span class="dot"></span>관리번호 (중앙 발급소)</h2>
+      <!-- ★ v7.0: 4개 값 모두 읽기전용 잠금 → 옆의 작은 「수정」 버튼(비밀번호 확인 후)으로만 변경 -->
       <div class="grid2">
-        <div class="field"><label>발주 – 연도 (Config A1)</label><input type="number" id="cfgPoYear"></div>
-        <div class="field"><label>발주 – 마지막순번 (Config B1)</label><input type="number" id="cfgPoSeq"></div>
-        <div class="field"><label>명세표 – 날짜 (STMT_Config A2)</label><input type="text" id="cfgStmtDate" placeholder="YYYYMMDD"></div>
-        <div class="field"><label>명세표 – 마지막순번 (STMT_Config B2)</label><input type="number" id="cfgStmtSeq"></div>
+        <div class="field"><label>발주 – 연도 (Config A1)</label>
+          <div class="cfgRow"><input type="number" id="cfgPoYear" readonly class="roInput">
+          <button class="cfgEditBtn" onclick="editCfg('cfgPoYear','발주 – 연도 (Config A1)','number')">수정</button></div></div>
+        <div class="field"><label>발주 – 마지막순번 (Config B1)</label>
+          <div class="cfgRow"><input type="number" id="cfgPoSeq" readonly class="roInput">
+          <button class="cfgEditBtn" onclick="editCfg('cfgPoSeq','발주 – 마지막순번 (Config B1)','number')">수정</button></div></div>
+        <div class="field"><label>명세표 – 날짜 (STMT_Config A2)</label>
+          <div class="cfgRow"><input type="text" id="cfgStmtDate" placeholder="YYYYMMDD" readonly class="roInput">
+          <button class="cfgEditBtn" onclick="editCfg('cfgStmtDate','명세표 – 날짜 (STMT_Config A2)','date8')">수정</button></div></div>
+        <div class="field"><label>명세표 – 마지막순번 (STMT_Config B2)</label>
+          <div class="cfgRow"><input type="number" id="cfgStmtSeq" readonly class="roInput">
+          <button class="cfgEditBtn" onclick="editCfg('cfgStmtSeq','명세표 – 마지막순번 (STMT_Config B2)','number')">수정</button></div></div>
       </div>
-      <div class="notice">미리보기는 번호를 <b>소비하지 않습니다</b>. 실제 <b>메일 발송</b> 시점에만 번호가 발급·기록됩니다.</div>
+      <div class="notice">미리보기는 번호를 <b>소비하지 않습니다</b>. 실제 <b>메일 발송</b> 시점에만 번호가 발급·기록됩니다.<br>
+        <b>★ v7.0</b> — 4개 값은 <b>잠금</b> 상태이며, 각 칸 옆의 작은 <b>「수정」 버튼</b>을 눌러 <b>비밀번호 확인 후</b>에만 바꿀 수 있습니다.
+        수정 후에는 반드시 아래 「설정 저장 + 기존 시트 반영」 을 눌러야 최종 저장됩니다.</div>
     </div>
 
     <div class="card">
@@ -474,7 +497,7 @@
 <div class="load" id="load"><div class="spin"></div><div class="loadTxt" id="loadTxt">처리 중…</div></div>
 <script>
 /* =====================================================================
- * 푸로찜 웹앱 Index  v3.0  (GitHub Pages 용)
+ * 푸로찜 웹앱 Index  v7.0  (GitHub Pages 용)
  * ---------------------------------------------------------------------
  *  · google.script.run 은 HtmlService 안에서만 동작하므로 사용하지 않습니다.
  *  · GAS 웹앱(/exec)에 fetch POST + Content-Type: text/plain 으로 호출합니다.
@@ -482,6 +505,9 @@
  *  · 서버 주소/API KEY 는 localStorage 에만 저장됩니다.
  *  · v3.0 추가: 발송이력 탭, 거래처 검색(90일), 발주/명세표발행 체크,
  *              납품형태 자동발송 현황, 메일 문구 편집, 매뉴얼 갱신
+ *  · ★ v7.0 추가: ① 납품희망일 토큰 연동 완전 보장(서버 최종 안전장치와 이중 방어)
+ *              ② AddressBook 거래처·상세주소·연락처 읽기전용 잠금
+ *              ③ 관리번호(중앙 발급소) 4개 값 잠금 + 개별 「수정」 버튼(비밀번호 확인 후)
  * ===================================================================== */
 
 var LS_URL = 'prozyme_gas_url';
@@ -492,7 +518,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyqrJqitPDwCJzqfYiejmsxKRvpcj2RoNM-Bg0WjN1keY6CH2L-X3oF20RXg4zgA4fF/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbx0hoWjhowVVhiAiHft5BCPsJg97Ki61EGwpzm7jaHwAOKUf6cd2q5-FxikY8av-21J/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -1332,15 +1358,17 @@ function renderOwner(){
     : '지금은 <b>기존 자동화(legacy)</b>가 자동발송을 담당합니다. 웹앱의 「지금 실행」은 차단됩니다.';
 }
 
-/* ★ v4.1: No. 자동번호 추가 + 행 삭제 비밀번호 게이트 */
+/* ★ v4.1: No. 자동번호 추가 + 행 삭제 비밀번호 게이트
+   ★ v7.0: 거래처·상세주소·연락처 는 읽기전용(roCell) 표시 — 클릭 수정 불가.
+   유일한 수정 방법은 「✕ 삭제」 후 「+ 행 추가」. (요청 2) */
 function renderBook(){
   var h = '';
   S.book.forEach(function(r, i){
     h += '<div class="bookRow">'
       + '<div class="no">' + (i + 1) + '</div>'
-      + '<input type="text" value="' + esc(r.name) + '" oninput="bookSet(' + i + ',\'name\',this.value)" placeholder="거래처">'
-      + '<input type="text" value="' + esc(r.addr) + '" oninput="bookSet(' + i + ',\'addr\',this.value)" placeholder="주소">'
-      + '<input type="text" value="' + esc(r.tel) + '" oninput="bookSet(' + i + ',\'tel\',this.value)" placeholder="연락처">'
+      + '<div class="roCell" title="읽기 전용 — 수정은 삭제 후 행 추가로만 가능">' + esc(r.name) + '</div>'
+      + '<div class="roCell" title="읽기 전용 — 수정은 삭제 후 행 추가로만 가능">' + esc(r.addr) + '</div>'
+      + '<div class="roCell" title="읽기 전용 — 수정은 삭제 후 행 추가로만 가능">' + esc(r.tel) + '</div>'
       + '<button class="delBtn" onclick="bookDel(' + i + ')">✕</button>'
       + '</div>';
   });
@@ -1348,7 +1376,25 @@ function renderBook(){
   $('bookBody').innerHTML = h;
   $('bookCount').textContent = S.book.length;
 }
+/* ★ v7.0: 값 잠금 — bookSet 은 더 이상 화면에서 호출되지 않습니다 (하위호환용으로 그대로 둠) */
 function bookSet(i, k, v){ if (S.book[i]) S.book[i][k] = v; bookAutoSave(); }
+
+/* ★ v7.0: 관리번호(중앙 발급소) 개별 수정 — 비밀번호 확인 후에만 값 변경 허용 (요청 3)
+   기존 saveSettings() 의 Config 저장 로직을 그대로 사용하므로 서버 코드는 변경 없습니다. */
+function editCfg(id, label, type){
+  requirePw(function(){
+    var el = $(id);
+    var cur = el ? el.value : '';
+    var v = prompt('『' + label + '』 값을 수정합니다.\n\n현재값: ' + cur + '\n\n새 값을 입력하세요:', cur);
+    if (v === null) { toast('취소되었습니다. 수정하지 않았습니다.', 3000); return; }
+    v = String(v).trim();
+    if (v === '') { toast('빈 값은 저장할 수 없습니다.', 3200); return; }
+    if (type === 'number' && !/^\d+$/.test(v)) { toast('숫자만 입력해 주세요.', 3400); return; }
+    if (type === 'date8' && !/^\d{8}$/.test(v)) { toast('YYYYMMDD 형식(숫자 8자리)으로 입력해 주세요.', 3600); return; }
+    if (el) el.value = v;
+    toast('값이 임시 반영되었습니다. 「설정 저장 + 기존 시트 반영」 을 눌러야 최종 저장됩니다.', 4600);
+  });
+}
 
 /* ★ v4.1: 행 삭제 — 비밀번호 확인 + 최종 Confirm 후 적용 */
 function bookDel(i){
@@ -1389,7 +1435,7 @@ function requirePw(cb){
 }
 function openPwGate(){
   var html = ''
-    + '<div class="notice">중요 버튼(행 추가 · 행 삭제)은 비밀번호 확인 후 동작합니다.</div>'
+    + '<div class="notice">중요 버튼(행 추가 · 행 삭제 · 관리번호 수정)은 비밀번호 확인 후 동작합니다.</div>'
     + '<div class="field" style="margin-top:10px"><label>비밀번호 (숫자 4자리)</label>'
     + '<input type="password" id="pwInput" inputmode="numeric" maxlength="4" onkeydown="if(event.key===\'Enter\')submitPw()" style="letter-spacing:6px;text-align:center;font-size:18px"></div>'
     + '<button class="btn" style="margin-top:8px" onclick="submitPw()">확인</button>';
@@ -1410,7 +1456,7 @@ function submitPw(){
 /* ★ v4.1: 「PW」 버튼 — 비밀번호 변경 */
 function openPwManager(){
   var html = ''
-    + '<div class="notice">중요 버튼(행 추가 · 행 삭제) 보호용 비밀번호를 변경합니다. (숫자 4자리)</div>'
+    + '<div class="notice">중요 버튼(행 추가 · 행 삭제 · 관리번호 수정) 보호용 비밀번호를 변경합니다. (숫자 4자리)</div>'
     + '<div class="field" style="margin-top:10px"><label>현재 비밀번호</label>'
     + '<input type="password" id="pwCur" inputmode="numeric" maxlength="4" style="letter-spacing:6px;text-align:center"></div>'
     + '<div class="field"><label>새 비밀번호</label>'
@@ -1822,6 +1868,7 @@ else {
 applyHash();
 window.addEventListener('hashchange', applyHash);
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
