@@ -98,7 +98,8 @@
   input:focus,textarea:focus,select:focus{border-color:var(--accent);background:#fff}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-  .bookRow{display:grid;grid-template-columns:1.1fr 1.6fr .9fr 32px;gap:6px;margin-bottom:6px}
+  .bookRow{display:grid;grid-template-columns:34px 1.1fr 1.6fr .9fr 32px;gap:6px;margin-bottom:6px}
+  .bookRow .no{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--navy)}
   .bookRow input{padding:9px 8px;font-size:12.5px}
   .delBtn{border:1px solid var(--line);background:#fff;color:#b3261e;border-radius:8px;
     font-size:14px;cursor:pointer;padding:0}
@@ -204,12 +205,14 @@
     <h1 id="appTitle">푸로찜 발주·명세표</h1>
     <div class="envRow">
       <div class="env" id="envLine">연결 확인 중…</div>
+      <button class="hdrMini" id="btnPw" onclick="openPwManager()">🔒 PW</button>
       <button class="hdrMini" id="btnManual" onclick="openManual()">📘 매뉴얼</button>
     </div>
   </div>
   <div class="tabs">
     <button class="tab on" data-tab="po">발주서</button>
     <button class="tab" data-tab="stmt">거래명세표</button>
+    <button class="tab" data-tab="addr">AddressBook</button>
     <button class="tab" data-tab="hist">발송이력</button>
     <button class="tab" data-tab="set">설정</button>
   </div>
@@ -321,7 +324,32 @@
     </div>
   </section>
 
-  <!-- ================= 3. 발송이력 ================= -->
+  <!-- ================= 3. AddressBook (★ v4.1: 설정 탭에서 독립 탭으로 이동) ================= -->
+  <section class="panel" id="p-addr">
+    <div class="card">
+      <h2><span class="dot"></span>AddressBook <span class="pill" id="bookCount">0</span></h2>
+      <div class="mini" style="margin-bottom:8px">A열: 제2배송지 거래처 / B열: 상세주소 / C열: 연락처<br>
+        이 표는 신규 GAS 시트의 <b>실시간 값</b>입니다. 아래에서 고치면 <b>기존 시트 AddressBook 에도 즉시 반영</b>됩니다.</div>
+      <div class="notice" style="margin-bottom:8px">
+        <b>🔒 안내</b> — 「+ 행 추가」 와 행 삭제 「✕」 버튼은 실수 방지를 위해 <b>비밀번호(기본 1234)</b> 확인 후 동작합니다.<br>
+        비밀번호 변경은 상단 <b>「🔒 PW」</b> 버튼에서 할 수 있습니다.
+      </div>
+      <div class="bookRow" style="font-size:10.5px;font-weight:700;color:var(--sub);margin-bottom:3px">
+        <div style="text-align:center">No.</div><div>거래처</div><div>상세주소</div><div>연락처</div><div></div>
+      </div>
+      <div id="bookBody"></div>
+      <div class="row wrap" style="margin-top:6px">
+        <button class="btn ghost sm" onclick="addBookRowPw()">+ 행 추가</button>
+        <button class="btn ghost sm" onclick="loadState()">↻ 새로고침</button>
+        <button class="btn dark sm" onclick="saveSettings()">저장 + 기존시트 반영</button>
+      </div>
+      <div class="notice" style="margin-top:8px">
+        행을 추가·삭제·수정하면 <b>자동으로 저장</b>됩니다(약 1초 뒤). 「저장」 버튼은 즉시 반영용입니다.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 4. 발송이력 ================= -->
   <section class="panel" id="p-hist">
     <div class="card">
       <h2><span class="dot"></span>발송이력 조회</h2>
@@ -381,7 +409,7 @@
     </div>
   </section>
 
-  <!-- ================= 4. 설정 ================= -->
+  <!-- ================= 5. 설정 ================= -->
   <section class="panel" id="p-set">
     <div class="card">
       <h2><span class="dot"></span>관리번호 (중앙 발급소)</h2>
@@ -406,24 +434,6 @@
         기존 「택배업체 거래명세표」 프로젝트의 <code>autoCheckStatementIssue</code> / <code>runDeliveryStatement</code> /
         <code>processWaitingDeliveries</code> / <code>sendScheduledClientEmail</code> 트리거를 <b>끄세요</b>.
         둘 다 켜두면 같은 건을 두 번 보낼 수 있습니다. (기본값 <code>legacy</code> = 기존 자동화 유지)
-      </div>
-    </div>
-
-    <div class="card">
-      <h2><span class="dot"></span>AddressBook <span class="pill" id="bookCount">0</span></h2>
-      <div class="mini" style="margin-bottom:8px">A열: 제2배송지 거래처 / B열: 상세주소 / C열: 연락처<br>
-        이 표는 신규 GAS 시트의 <b>실시간 값</b>입니다. 아래에서 고치면 <b>기존 시트 AddressBook 에도 즉시 반영</b>됩니다.</div>
-      <div class="bookRow" style="font-size:10.5px;font-weight:700;color:var(--sub);margin-bottom:3px">
-        <div>거래처</div><div>상세주소</div><div>연락처</div><div></div>
-      </div>
-      <div id="bookBody"></div>
-      <div class="row wrap" style="margin-top:6px">
-        <button class="btn ghost sm" onclick="addBookRow()">+ 행 추가</button>
-        <button class="btn ghost sm" onclick="loadState()">↻ 새로고침</button>
-        <button class="btn dark sm" onclick="saveSettings()">저장 + 기존시트 반영</button>
-      </div>
-      <div class="notice" style="margin-top:8px">
-        행을 추가·삭제·수정하면 <b>자동으로 저장</b>됩니다(약 1초 뒤). 「저장」 버튼은 즉시 반영용입니다.
       </div>
     </div>
 
@@ -482,7 +492,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzx5iFYXmyokn576EfRY2-ktYG_-dFlTKELaDod0T24vhtvuiqzl3r3YzpVRZAyLoSV/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbz9CEw0LE-oP11uJg2mrjrnSotMj_xql2fVtixwBMVsVLQ0GOcMcN6TixnxtzFLPf_J/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -615,13 +625,14 @@ Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){
     $('p-' + t).classList.add('on');
     if (t === 'set') fillSettings();
     if (t === 'hist') loadHistory();
+    if (t === 'addr') renderBook();
     updateBar();
   };
 });
 
 function updateBar(){
   var bar = $('bar');
-  if (S.tab === 'set' || S.tab === 'hist') { bar.style.display = 'none'; return; }
+  if (S.tab === 'set' || S.tab === 'hist' || S.tab === 'addr') { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
   var n = (S.tab === 'po') ? Object.keys(S.selPo).length : Object.keys(S.selStmt).length;
   $('btnPreview').disabled = n === 0;
@@ -901,12 +912,27 @@ function previewPo(){
     loading(false);
     if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 4500); return; }
     S.lastPo = r;
+    /* ★ v4.1: 연동값을 한 번에 알아볼 수 있는 HTML 확인표 추가 */
+    var linesHtml = '';
+    if (r.lines && r.lines.length) {
+      linesHtml = '<div class="secTitle">품목 연동값 (PDF에 들어간 그대로)</div>'
+        + '<table class="histTable" style="min-width:0">'
+        + '<tr><th>No.</th><th>제품(푸로찜 에스)</th><th>구분(규격)</th><th>수량(Box)</th><th>중량(KG)</th></tr>';
+      r.lines.forEach(function(x, i){
+        var kg = (parseFloat(String(x.spec || '').replace(/[^0-9.]/g, '')) * (x.qty || 0)) || '';
+        linesHtml += '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(x.product || '-') + '</td>'
+          + '<td class="c">' + esc(x.spec || '-') + '</td>'
+          + '<td class="c">' + comma(x.qty) + '</td><td class="c">' + (kg === '' ? '-' : comma(kg)) + '</td></tr>';
+      });
+      linesHtml += '</table>';
+    }
     var info = '<div class="secTitle">발주서 정보</div>'
       + '<div class="kv"><span>발주번호(임시)</span><span>' + esc(r.orderNo) + '</span></div>'
-      + '<div class="kv"><span>납품희망일</span><span>' + esc(r.formattedDate) + '</span></div>'
+      + '<div class="kv"><span>납품희망일 (PO_Template F11 연동)</span><span>' + esc(r.formattedDate) + '</span></div>'
       + '<div class="kv"><span>배송지</span><span>' + esc(r.clientName || '-') + '</span></div>'
       + '<div class="kv"><span>품목 / 수량</span><span>' + r.count + '건 / ' + comma(r.qty) + '</span></div>'
       + '<div class="kv"><span>총량(KG)</span><span>' + comma(r.totalKg) + '</span></div>'
+      + linesHtml
       + '<div class="warnBox" style="margin-top:12px">이 번호는 아직 <b>기록되지 않았습니다.</b> 메일 발송 시 확정됩니다.</div>';
     pdfModal('발주서 미리보기', r.base64, r.fileName, info);
   });
@@ -929,12 +955,26 @@ function previewStmtIds(ids){
     loading(false);
     if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 4500); return; }
     S.lastStmt = r;
+    /* ★ v4.1: 연동값을 한 번에 알아볼 수 있는 HTML 확인표 추가 */
+    var detailHtml = '';
+    if (r.detail && r.detail.length) {
+      detailHtml = '<div class="secTitle">품목 연동값 (PDF에 들어간 그대로)</div>'
+        + '<table class="histTable" style="min-width:0">'
+        + '<tr><th>No.</th><th>구분(규격)</th><th>수량</th><th>단가</th><th>금액</th></tr>';
+      r.detail.forEach(function(x, i){
+        detailHtml += '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(x.spec || '-') + '</td>'
+          + '<td class="c">' + comma(x.qty) + '</td>'
+          + '<td class="c">' + comma(x.price) + '</td><td class="c">' + comma(x.amount) + '</td></tr>';
+      });
+      detailHtml += '</table>';
+    }
     var info = '<div class="secTitle">명세표 정보</div>'
-      + '<div class="kv"><span>관리번호(임시)</span><span>' + esc(r.manageNo) + '</span></div>'
-      + '<div class="kv"><span>거래처</span><span>' + esc(r.clientName) + '</span></div>'
+      + '<div class="kv"><span>관리번호 (STMT_Template E2 연동)</span><span>' + esc(r.manageNo) + '</span></div>'
+      + '<div class="kv"><span>거래처 (STMT_Template B6 연동)</span><span>' + esc(r.clientName) + '</span></div>'
       + '<div class="kv"><span>납품일자</span><span>' + esc(r.deliveryDate) + '</span></div>'
       + '<div class="kv"><span>수량 / 금액</span><span>' + comma(r.totalQty) + ' / ' + comma(r.totalAmount) + '원</span></div>'
       + '<div class="kv"><span>거래처 메일</span><span>' + (r.emails && r.emails.length ? esc(r.emails.join(', ')) : '<span style="color:#b3261e">없음</span>') + '</span></div>'
+      + detailHtml
       + '<div class="warnBox" style="margin-top:12px">이 번호는 아직 <b>기록되지 않았습니다.</b> 메일 발송 시 확정됩니다.</div>';
     pdfModal('거래명세표 미리보기', r.base64, r.fileName, info);
   });
@@ -947,8 +987,10 @@ function mailDefaults(){
   var m = (S.state && S.state.mailDefaults) || {};
   return {
     poSubject: m.poSubject || '[푸로찜총판] 납품발주 요청 건 (납품희망일:{납품희망일})',
-    poBody: m.poBody || '안녕하세요 푸로찜 총판입니다.\n\n첨부와 같이 발주 요청드립니다.\n\n감사합니다.',
-    stmtSubject: m.stmtSubject || '[거래명세표] {관리번호} - {거래처}',
+    /* ★ v4.1: 기본 문구 변경 (요청 문구) */
+    poBody: m.poBody || '안녕하세요 푸로찜 총판입니다.\n\n첨부와 같이 납품 발주 요청드립니다.\n\n감사합니다.',
+    /* ★ v4.1: 명세표 제목 기본값 변경 — {거래처} 는 STMT_Template B6 실시간 연동값 */
+    stmtSubject: m.stmtSubject || '[푸로찜총판] {거래처} – 거래명세표 전달 건',
     stmtBody: m.stmtBody || '안녕하세요 푸로찜 총판입니다.\n\n첨부와 같이 제품 납품에 대한 거래명세표를 파일로 전달드립니다.\n\n감사합니다.'
   };
 }
@@ -995,6 +1037,11 @@ function sendPo(){
 function confirmSendPo(orderNo){
   var to = $('poTo').value.trim();
   if (!to) { toast('받는 사람을 입력해 주세요.'); return; }
+  /* ★ v4.1: 실수 발송 방지 — 최종 확인 1단계 추가 */
+  if (!confirm('정말 발송할까요?\n\n받는 사람: ' + to + '\n제목: ' + $('poSubject').value.trim() + '\n\n확인을 누르면 즉시 발송됩니다.')) {
+    toast('취소되었습니다. 발송하지 않았습니다.', 3200);
+    return;
+  }
   var opts = { to: to, cc: $('poCc').value.trim(), subject: $('poSubject').value.trim(), body: $('poBody').value };
   var ids = Object.keys(S.selPo);
   closeModal();
@@ -1059,6 +1106,12 @@ function confirmSendStmt(){
     body: $('stBody').value
   };
   if (!opts.toClient && !opts.toSelf && !opts.markDone) { toast('발송 대상을 하나 이상 선택해 주세요.'); return; }
+
+  /* ★ v4.1: 실수 발송 방지 — 최종 확인 1단계 추가 */
+  if (!confirm('정말 발송할까요?\n\n거래처: ' + (S.clientName || '-') + '\n제목: ' + $('stSubject').value.trim() + '\n\n확인을 누르면 즉시 발송됩니다.')) {
+    toast('취소되었습니다. 발송하지 않았습니다.', 3200);
+    return;
+  }
 
   var ids = Object.keys(S.selStmt);
   var manageNo = (S.lastStmt && S.lastStmt.pageIds && sameSet(ids, S.lastStmt.pageIds)) ? S.lastStmt.manageNo : '';
@@ -1274,10 +1327,12 @@ function renderOwner(){
     : '지금은 <b>기존 자동화(legacy)</b>가 자동발송을 담당합니다. 웹앱의 「지금 실행」은 차단됩니다.';
 }
 
+/* ★ v4.1: No. 자동번호 추가 + 행 삭제 비밀번호 게이트 */
 function renderBook(){
   var h = '';
   S.book.forEach(function(r, i){
     h += '<div class="bookRow">'
+      + '<div class="no">' + (i + 1) + '</div>'
       + '<input type="text" value="' + esc(r.name) + '" oninput="bookSet(' + i + ',\'name\',this.value)" placeholder="거래처">'
       + '<input type="text" value="' + esc(r.addr) + '" oninput="bookSet(' + i + ',\'addr\',this.value)" placeholder="주소">'
       + '<input type="text" value="' + esc(r.tel) + '" oninput="bookSet(' + i + ',\'tel\',this.value)" placeholder="연락처">'
@@ -1289,8 +1344,85 @@ function renderBook(){
   $('bookCount').textContent = S.book.length;
 }
 function bookSet(i, k, v){ if (S.book[i]) S.book[i][k] = v; bookAutoSave(); }
-function bookDel(i){ S.book.splice(i, 1); renderBook(); bookAutoSave(); }
-function addBookRow(){ S.book.push({ name: '', addr: '', tel: '' }); renderBook(); }
+
+/* ★ v4.1: 행 삭제 — 비밀번호 확인 + 최종 Confirm 후 적용 */
+function bookDel(i){
+  var r = S.book[i];
+  if (!r) return;
+  requirePw(function(){
+    if (!confirm('정말 이 행을 삭제할까요?\n\nNo.' + (i + 1) + ' · 거래처: ' + (r.name || '(이름 없음)') + '\n\n확인을 누르면 삭제 후 자동 저장됩니다.')) {
+      toast('취소되었습니다. 삭제하지 않았습니다.', 3200);
+      return;
+    }
+    S.book.splice(i, 1); renderBook(); bookAutoSave();
+  });
+}
+/* ★ v4.1: 행 추가 — 비밀번호 확인 + 최종 Confirm 후 적용 */
+function addBookRow(){
+  requirePw(function(){
+    if (!confirm('새 행을 추가할까요?\n\n확인을 누르면 빈 행이 추가됩니다.')) {
+      toast('취소되었습니다. 추가하지 않았습니다.', 3200);
+      return;
+    }
+    S.book.push({ name: '', addr: '', tel: '' }); renderBook();
+    var rows = document.querySelectorAll('#bookBody .bookRow');
+    if (rows.length) rows[rows.length - 1].querySelector('input').focus();
+  });
+}
+function addBookRowPw(){ addBookRow(); }
+
+/* ★ v4.1: 웹앱 비밀번호 (중요 버튼 보호 / 기본 1234 / 서버 검증)
+   성공 후 세션 만료(30분)까지 재입력 없음 */
+var PW_SESSION_MS = 30 * 60 * 1000;
+var _pwUntil = 0;
+var _pwCb = null;
+function pwUnlocked(){ return Date.now() < _pwUntil; }
+function requirePw(cb){
+  if (pwUnlocked()) { cb(); return; }
+  _pwCb = cb;
+  openPwGate();
+}
+function openPwGate(){
+  var html = ''
+    + '<div class="notice">중요 버튼(행 추가 · 행 삭제)은 비밀번호 확인 후 동작합니다.</div>'
+    + '<div class="field" style="margin-top:10px"><label>비밀번호 (숫자 4자리)</label>'
+    + '<input type="password" id="pwInput" inputmode="numeric" maxlength="4" onkeydown="if(event.key===\'Enter\')submitPw()" style="letter-spacing:6px;text-align:center;font-size:18px"></div>'
+    + '<button class="btn" style="margin-top:8px" onclick="submitPw()">확인</button>';
+  openModal('🔒 비밀번호 확인', html);
+  setTimeout(function(){ var el = $('pwInput'); if (el) el.focus(); }, 150);
+}
+function submitPw(){
+  var pw = ($('pwInput') && $('pwInput').value || '').trim();
+  if (!pw) { toast('비밀번호를 입력해 주세요.'); return; }
+  api('checkPw', { pw: pw }, function(r){
+    if (!r || !r.ok) { toast('비밀번호가 일치하지 않습니다.', 3200); return; }
+    _pwUntil = Date.now() + PW_SESSION_MS;
+    closeModal();
+    toast('확인 완료 (30분간 재입력 없음)', 2400);
+    if (_pwCb) { var f = _pwCb; _pwCb = null; f(); }
+  });
+}
+/* ★ v4.1: 「PW」 버튼 — 비밀번호 변경 */
+function openPwManager(){
+  var html = ''
+    + '<div class="notice">중요 버튼(행 추가 · 행 삭제) 보호용 비밀번호를 변경합니다. (숫자 4자리)</div>'
+    + '<div class="field" style="margin-top:10px"><label>현재 비밀번호</label>'
+    + '<input type="password" id="pwCur" inputmode="numeric" maxlength="4" style="letter-spacing:6px;text-align:center"></div>'
+    + '<div class="field"><label>새 비밀번호</label>'
+    + '<input type="password" id="pwNew" inputmode="numeric" maxlength="4" style="letter-spacing:6px;text-align:center"></div>'
+    + '<button class="btn" style="margin-top:8px" onclick="submitPwChange()">변경</button>';
+  openModal('🔒 비밀번호 변경', html);
+}
+function submitPwChange(){
+  var cur = ($('pwCur') && $('pwCur').value || '').trim();
+  var nw = ($('pwNew') && $('pwNew').value || '').trim();
+  api('setAppPw', { curPw: cur, newPw: nw }, function(r){
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || '응답 없음'), 4200); return; }
+    _pwUntil = Date.now() + PW_SESSION_MS;
+    closeModal();
+    toast('비밀번호가 변경되었습니다.', 3200);
+  });
+}
 
 function saveSettings(){
   var config = {
@@ -1541,6 +1673,8 @@ function loadPdfJs_(){
   return _pdfjsReady;
 }
 
+/* ★ v4.1: 발주서·명세표 공통 — 미리보기 화질 개선 + 연동값 HTML 확인표
+   기존 v4.0 pdfModal 을 그대로 두고 새 함수로 교체 (원본 보존용 주석 아래 유지) */
 function pdfModal(title, base64, fileName, infoHtml){
   var bin = atob(base64 || '');
   var arr = new Uint8Array(bin.length);
@@ -1567,16 +1701,21 @@ function pdfModal(title, base64, fileName, infoHtml){
     if (!wrap) return;
     wrap.innerHTML = '';
     var w = Math.max(280, wrap.clientWidth - 16);
+    /* ★ v4.1 화질 개선: devicePixelRatio 만큼 고해상도 렌더 후 CSS로 축소 표시 */
+    var dpr = Math.max(2, window.devicePixelRatio || 1);
     var chain = Promise.resolve();
     for (var n = 1; n <= pdf.numPages; n++) {
       (function(num){
         chain = chain.then(function(){
           return pdf.getPage(num).then(function(page){
             var base = page.getViewport({ scale: 1 });
-            var scale = Math.min(2.2, w / base.width);
+            var cssScale = Math.min(1.5, w / base.width);
+            var scale = Math.min(6, cssScale * dpr);
             var vp = page.getViewport({ scale: scale });
             var cv = document.createElement('canvas');
             cv.width = vp.width; cv.height = vp.height;
+            cv.style.width = (base.width * cssScale) + 'px';
+            cv.style.height = 'auto';
             return page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise.then(function(){
               var wp = $('pdfWrap'); if (wp) wp.appendChild(cv);
             });
@@ -1661,7 +1800,7 @@ function bookAutoSave(){
 /* ---------- 해시 라우팅 ---------- */
 function applyHash(){
   var h = (location.hash || '').replace('#','');
-  if (h !== 'po' && h !== 'stmt' && h !== 'hist' && h !== 'set') return;
+  if (h !== 'po' && h !== 'stmt' && h !== 'addr' && h !== 'hist' && h !== 'set') return;
   var b = document.querySelector('.tab[data-tab="' + h + '"]');
   if (b) b.click();
 }
