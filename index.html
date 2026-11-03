@@ -32,7 +32,8 @@
     display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden}
   .logo img{width:100%;height:100%;object-fit:cover}
   .brand h1{font-size:16px;margin:0;font-weight:700;letter-spacing:-.3px}
-  .brand .env{margin-left:auto;font-size:11px;opacity:.72;text-align:right;line-height:1.3}
+  .brand .envRow{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .brand .env{font-size:11px;opacity:.72;text-align:right;line-height:1.3}
   .tabs{display:flex;gap:4px}
   .tab{
     flex:1;border:0;background:transparent;color:rgba(255,255,255,.62);
@@ -137,6 +138,22 @@
   @keyframes sp{to{transform:rotate(360deg)}}
   .loadTxt{font-size:13px;color:var(--sub);font-weight:600}
   .pdfFrame{width:100%;height:64vh;border:1px solid var(--line);border-radius:10px;background:#f0f2f6}
+  /* v4.0 — PDF 미리보기(pdf.js 캔버스) */
+  .pdfWrap{width:100%;height:62vh;overflow:auto;border:1px solid var(--line);border-radius:10px;
+    background:#e9edf3;padding:8px;text-align:center}
+  .pdfWrap canvas{max-width:100%;height:auto;display:block;margin:0 auto 8px;box-shadow:0 2px 10px rgba(0,0,0,.12);background:#fff}
+  .pdfFallback{width:100%;height:62vh;border:1px solid var(--line);border-radius:10px;background:#f0f2f6}
+  /* v4.0 — 조회 버튼 구분(크고 진하게) */
+  .btn.go{background:var(--navy);color:#fff;font-weight:800;padding:12px 20px;font-size:14px;
+    border-radius:11px;min-width:96px;box-shadow:0 2px 8px rgba(20,32,58,.25)}
+  .btn.go:active{transform:translateY(1px)}
+  /* v4.0 — 기간 직접 조회 */
+  .rangeBox{background:#f7f9fd;border:1px solid #dbe6fb;border-radius:11px;padding:10px;margin-bottom:9px}
+  .rangeBox .row{gap:6px}
+  .rangeBox input[type=date]{padding:9px 8px;font-size:12.5px;flex:1;min-width:0}
+  .tplBtn{display:flex;gap:6px;align-items:center}
+  .hdrMini{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;
+    font-size:11px;font-weight:700;padding:5px 9px;border-radius:8px}
   .kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
   .kv:last-child{border-bottom:0}
   .kv span:first-child{color:var(--sub);flex:0 0 auto}
@@ -185,7 +202,10 @@
   <div class="brand">
     <div class="logo" id="logoBox">📦</div>
     <h1 id="appTitle">푸로찜 발주·명세표</h1>
-    <div class="env" id="envLine">연결 확인 중…</div>
+    <div class="envRow">
+      <div class="env" id="envLine">연결 확인 중…</div>
+      <button class="hdrMini" id="btnManual" onclick="openManual()">📘 매뉴얼</button>
+    </div>
   </div>
   <div class="tabs">
     <button class="tab on" data-tab="po">발주서</button>
@@ -199,7 +219,10 @@
   <!-- ================= 1. 발주서 ================= -->
   <section class="panel on" id="p-po">
     <div class="card">
-      <h2><span class="dot"></span>발주 대상 <span class="pill" id="poCount">0건</span></h2>
+      <div class="tplBtn" style="justify-content:space-between">
+        <h2 style="margin:0"><span class="dot"></span>발주 대상 <span class="pill" id="poCount">0건</span></h2>
+        <button class="btn ghost sm" onclick="openMailTpl('po')">✉ 메일 문구</button>
+      </div>
       <div class="mini" style="margin-bottom:10px">
         노션 조건 · <b>발주관리번호=비어있음</b> + <b>발주서발송여부≠체크</b> + <b>출고여부≠True</b><br>
         「발주」 체크 여부와 상관없이 <b>보낼 수 있는 건은 모두</b> 나옵니다 → 웹앱이 먼저 잡습니다.
@@ -233,7 +256,10 @@
   <!-- ================= 2. 거래명세표 ================= -->
   <section class="panel" id="p-stmt">
     <div class="card">
-      <h2><span class="dot"></span>① 거래처 검색 <span class="pill" id="stmtWindowPill">최근 90일</span></h2>
+      <div class="tplBtn" style="justify-content:space-between">
+        <h2 style="margin:0"><span class="dot"></span>① 거래처 검색 <span class="pill" id="stmtWindowPill">최근 90일</span></h2>
+        <button class="btn ghost sm" onclick="openMailTpl('stmt')">✉ 메일 문구</button>
+      </div>
       <div class="mini" style="margin-bottom:8px">
         거래처 이름 또는 이메일 일부로 검색합니다. 최근 <b id="stmtWindowTxt">90</b>일 내 생성된 페이지만 대상입니다.
       </div>
@@ -245,6 +271,18 @@
         <button class="btn ghost sm" onclick="setWindow(90)">90일</button>
         <button class="btn ghost sm" onclick="setWindow(60)">60일</button>
         <button class="btn ghost sm" onclick="setWindow(30)">30일</button>
+        <button class="btn ghost sm" onclick="toggleRange()">📅 기간 조회</button>
+      </div>
+      <div class="rangeBox" id="rangeBox" style="display:none">
+        <div class="mini" style="margin-bottom:6px">조회 기간을 <b>캘린더</b>에서 직접 선택하세요. (생성일 기준)</div>
+        <div class="row wrap">
+          <input type="date" id="stmtFrom">
+          <input type="date" id="stmtTo">
+        </div>
+        <div class="row wrap" style="margin-top:6px">
+          <button class="btn go" onclick="applyRange()">기간 조회</button>
+          <button class="btn ghost sm" onclick="clearRange()">기간 해제</button>
+        </div>
       </div>
       <div id="clientList"><div class="empty"><span class="ico">🔎</span>거래처를 검색해 주세요.</div></div>
     </div>
@@ -297,12 +335,10 @@
         </div>
         <div class="field"><label>상태</label>
           <select id="hStatus">
-            <option value="">전체</option>
-            <option value="발송완료">발송완료 (거래처/본사)</option>
-            <option value="대기">대기 (미리보기·발송 안 함)</option>
-            <option value="수동완료">수동완료</option>
-            <option value="실패">실패</option>
-            <option value="취소">취소 (만료)</option>
+            <option value="">① 전체</option>
+            <option value="발송완료">② 발송완료</option>
+            <option value="대기">③ 대기 (미리보기·발송 안 함)</option>
+            <option value="PDF 저장">④ PDF 저장 (발송 안 함)</option>
           </select>
         </div>
         <div class="field"><label>시작일</label><input type="date" id="hFrom"></div>
@@ -313,7 +349,7 @@
           onkeydown="if(event.key==='Enter')loadHistory()">
       </div>
       <div class="chipbar">
-        <button class="btn ghost sm" onclick="loadHistory()">조회</button>
+        <button class="btn go" onclick="loadHistory()">🔍 조회</button>
         <button class="btn ghost sm" onclick="quickRange('today')">오늘</button>
         <button class="btn ghost sm" onclick="quickRange('7d')">최근 7일</button>
         <button class="btn ghost sm" onclick="quickRange('30d')">최근 30일</button>
@@ -348,35 +384,6 @@
   <!-- ================= 4. 설정 ================= -->
   <section class="panel" id="p-set">
     <div class="card">
-      <h2><span class="dot"></span>서버 연결 (Google Apps Script)</h2>
-      <div class="notice">주소는 <b>Index.html 안의 <code>DEFAULT_GAS_URL</code></b> 에 이미 들어 있습니다.
-        아래 칸은 <b>임시로 다른 서버를 쓸 때만</b> 채우세요. (비우면 코드에 내장된 주소 사용)</div>
-      <div class="field">
-        <label>웹앱 배포 URL (/exec)</label>
-        <input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/AKfycbz9XWye_ZfZT2gF4OARDXdAAIDfKgy-b7vQGe7kbUc3Psv0SfCV_bemSobhB_2FKIol/exec">
-      </div>
-      <div class="field">
-        <label>API KEY (GAS 스크립트 속성에 넣은 경우에만)</label>
-        <input type="password" id="gasKey" placeholder="비워두면 사용 안 함">
-      </div>
-      <div class="row wrap" style="margin-bottom:8px">
-        <button class="btn dark sm" onclick="saveConn()">연결 저장</button>
-        <button class="btn ghost sm" onclick="pingServer()">연결 테스트</button>
-      </div>
-      <details class="fold" style="margin-top:6px">
-        <summary>이 항목이 왜 필요한가요? (보안 · 구조 설명)</summary>
-        <div class="notice" style="margin-top:8px">
-          이 화면(Index.html)은 <b>GitHub Pages</b>에서 열리는 "남의 서버" 페이지입니다. 남의 서버 페이지는
-          <code>google.script.run</code> 을 쓸 수 없어서, <b>GAS /exec 주소를 직접 알고 있어야</b> 호출할 수 있습니다.
-          그래서 주소를 <b>이 브라우저(localStorage)에만</b> 저장합니다.<br><br>
-          · <b>API KEY</b>는 GAS 쪽 <code>API_KEY</code> 속성과 짝을 이루는 "비밀번호"입니다. 넣으면 주소를 아는 사람도 키 없이는 실행 못 합니다. (선택)<br>
-          · 저장된 값은 <b>서버로 전송되지 않고</b>, 오직 본인 기기에서만 쓰입니다.<br>
-          · 주소를 코드에 박아두면 재배포 때마다 GitHub를 고쳐야 하므로, <b>입력값 저장 방식</b>이 더 안전하고 편합니다.
-        </div>
-      </details>
-    </div>
-
-    <div class="card">
       <h2><span class="dot"></span>관리번호 (중앙 발급소)</h2>
       <div class="grid2">
         <div class="field"><label>발주 – 연도 (Config A1)</label><input type="number" id="cfgPoYear"></div>
@@ -385,20 +392,6 @@
         <div class="field"><label>명세표 – 마지막순번 (STMT_Config B2)</label><input type="number" id="cfgStmtSeq"></div>
       </div>
       <div class="notice">미리보기는 번호를 <b>소비하지 않습니다</b>. 실제 <b>메일 발송</b> 시점에만 번호가 발급·기록됩니다.</div>
-    </div>
-
-    <div class="card">
-      <h2><span class="dot"></span>메일 기본 문구 <span class="pill" id="mailTplPill">편집</span></h2>
-      <div class="mini" style="margin-bottom:8px">
-        발송 창에 이 문구가 <b>미리 채워집니다</b>. 발송할 때마다 그 자리에서 몇 줄 고쳐도 됩니다.
-        치환: <code>{발주번호}</code> <code>{납품희망일}</code> <code>{관리번호}</code> <code>{거래처}</code> <code>{납품일자}</code>
-      </div>
-      <div class="field"><label>발주서 – 제목</label><input type="text" id="tplPoSubject"></div>
-      <div class="field"><label>발주서 – 본문</label><textarea id="tplPoBody" rows="4"></textarea></div>
-      <div class="divider"></div>
-      <div class="field"><label>거래명세표 – 제목</label><input type="text" id="tplStmtSubject"></div>
-      <div class="field"><label>거래명세표 – 본문</label><textarea id="tplStmtBody" rows="4"></textarea></div>
-      <button class="btn ghost sm" onclick="saveMailTpl()">문구 저장</button>
     </div>
 
     <div class="card">
@@ -418,12 +411,20 @@
 
     <div class="card">
       <h2><span class="dot"></span>AddressBook <span class="pill" id="bookCount">0</span></h2>
-      <div class="mini" style="margin-bottom:8px">A열: 제2배송지 거래처 / B열: 상세주소 / C열: 연락처</div>
+      <div class="mini" style="margin-bottom:8px">A열: 제2배송지 거래처 / B열: 상세주소 / C열: 연락처<br>
+        이 표는 신규 GAS 시트의 <b>실시간 값</b>입니다. 아래에서 고치면 <b>기존 시트 AddressBook 에도 즉시 반영</b>됩니다.</div>
       <div class="bookRow" style="font-size:10.5px;font-weight:700;color:var(--sub);margin-bottom:3px">
         <div>거래처</div><div>상세주소</div><div>연락처</div><div></div>
       </div>
       <div id="bookBody"></div>
-      <button class="btn ghost sm" style="margin-top:6px" onclick="addBookRow()">+ 행 추가</button>
+      <div class="row wrap" style="margin-top:6px">
+        <button class="btn ghost sm" onclick="addBookRow()">+ 행 추가</button>
+        <button class="btn ghost sm" onclick="loadState()">↻ 새로고침</button>
+        <button class="btn dark sm" onclick="saveSettings()">저장 + 기존시트 반영</button>
+      </div>
+      <div class="notice" style="margin-top:8px">
+        행을 추가·삭제·수정하면 <b>자동으로 저장</b>됩니다(약 1초 뒤). 「저장」 버튼은 즉시 반영용입니다.
+      </div>
     </div>
 
     <div class="card">
@@ -448,7 +449,6 @@
 
 <!-- 하단 액션바 -->
 <div class="bar" id="bar">
-  <button class="btn ghost sm" id="btnManual" onclick="openManual()">📘 매뉴얼</button>
   <button class="btn ghost" id="btnPreview" onclick="doPreview()">미리보기</button>
   <button class="btn" id="btnSend" onclick="doSend()">메일 발송</button>
 </div>
@@ -482,7 +482,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbz9XWye_ZfZT2gF4OARDXdAAIDfKgy-b7vQGe7kbUc3Psv0SfCV_bemSobhB_2FKIol/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzx5iFYXmyokn576EfRY2-ktYG_-dFlTKELaDod0T24vhtvuiqzl3r3YzpVRZAyLoSV/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -503,6 +503,8 @@ var S = {
   gasUrl: '',
   apiKey: '',
   windowDays: 90,
+  rangeFrom: '',
+  rangeTo: '',
   _pdfUrl: '',
   _pulled: null
 };
@@ -630,7 +632,7 @@ function updateBar(){
 
 /* ---------- 상태 ---------- */
 function loadState(){
-  if (!S.gasUrl) { $('envLine').textContent = '설정에서 서버 연결'; return; }
+  if (!S.gasUrl) { $('envLine').textContent = 'DEFAULT_GAS_URL 미설정'; return; }
   api('getState', {}, function(r){
     if (!r || !r.ok) { $('envLine').innerHTML = '⚠ 연결 실패'; toast('설정 로드 실패: ' + (r && r.error || ''), 4200); return; }
     S.state = r;
@@ -744,7 +746,7 @@ function poRelease(){
  * ===================================================================== */
 function searchClients(){
   $('clientList').innerHTML = '<div class="empty"><span class="ico">⏳</span>검색 중…</div>';
-  api('searchClients', { days: S.windowDays, q: $('stmtClientQ').value.trim() }, function(r){
+  api('searchClients', { days: S.windowDays, from: S.rangeFrom, to: S.rangeTo, q: $('stmtClientQ').value.trim() }, function(r){
     if (!r || !r.ok) { $('clientList').innerHTML = '<div class="empty"><span class="ico">⚠</span>' + esc(r && r.error) + '</div>'; return; }
     S.clients = r.clients || [];
     renderClients();
@@ -786,7 +788,7 @@ function pickClient(i){
 function loadClientPages(){
   if (!S.clientKey) { $('stmtList').innerHTML = '<div class="empty"><span class="ico">👈</span>위에서 거래처를 선택하세요.</div>'; return; }
   $('stmtList').innerHTML = '<div class="empty"><span class="ico">⏳</span>불러오는 중…</div>';
-  api('listClientPages', { clientKey: S.clientKey, days: S.windowDays }, function(r){
+  api('listClientPages', { from: S.rangeFrom, to: S.rangeTo, clientKey: S.clientKey, days: S.windowDays }, function(r){
     if (!r || !r.ok) { $('stmtList').innerHTML = '<div class="empty"><span class="ico">⚠</span>' + esc(r && r.error) + '</div>'; return; }
     S.stmt = r.rows || [];
     S.selStmt = {};
@@ -1255,27 +1257,11 @@ function fillSettings(){
 }
 
 function fillMailTpl(){
-  var t = mailDefaults();
-  $('tplPoSubject').value = t.poSubject;
-  $('tplPoBody').value = t.poBody;
-  $('tplStmtSubject').value = t.stmtSubject;
-  $('tplStmtBody').value = t.stmtBody;
+  /* ★ v4.0: 설정 카드 제거 — 각 탭의 「✉ 메일 문구」 모달로 이동 (아무것도 하지 않음) */
 }
 
 function saveMailTpl(){
-  var mail = {
-    poSubject: $('tplPoSubject').value,
-    poBody: $('tplPoBody').value,
-    stmtSubject: $('tplStmtSubject').value,
-    stmtBody: $('tplStmtBody').value
-  };
-  loading(true, '문구 저장 중…');
-  api('saveSettings', { mail: mail }, function(r){
-    loading(false);
-    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
-    toast('메일 기본 문구를 저장했습니다.', 3000);
-    loadState();
-  });
+  /* ★ v4.0: saveMailTplModal(kind) 로 대체 */
 }
 
 function renderOwner(){
@@ -1302,8 +1288,8 @@ function renderBook(){
   $('bookBody').innerHTML = h;
   $('bookCount').textContent = S.book.length;
 }
-function bookSet(i, k, v){ if (S.book[i]) S.book[i][k] = v; }
-function bookDel(i){ S.book.splice(i, 1); renderBook(); }
+function bookSet(i, k, v){ if (S.book[i]) S.book[i][k] = v; bookAutoSave(); }
+function bookDel(i){ S.book.splice(i, 1); renderBook(); bookAutoSave(); }
 function addBookRow(){ S.book.push({ name: '', addr: '', tel: '' }); renderBook(); }
 
 function saveSettings(){
@@ -1314,14 +1300,9 @@ function saveSettings(){
     stmtSeq: Number($('cfgStmtSeq').value || 0)
   };
   var clean = S.book.filter(function(r){ return String(r.name || '').trim() !== ''; });
-  var mail = {
-    poSubject: $('tplPoSubject').value,
-    poBody: $('tplPoBody').value,
-    stmtSubject: $('tplStmtSubject').value,
-    stmtBody: $('tplStmtBody').value
-  };
+  /* ★ v4.0: 메일 문구는 각 탭의 「메일 문구」 모달에서 저장합니다. (설정 카드 제거) */
   loading(true, '저장 중…');
-  api('saveSettings', { config: config, addressBook: clean, mail: mail }, function(r){
+  api('saveSettings', { config: config, addressBook: clean, mail: null }, function(r){
     loading(false);
     if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
     if (S.state) { S.state.config = r.config; S.state.legacy = r.legacy; }
@@ -1385,101 +1366,296 @@ function pingServer(){
  * ===================================================================== */
 function openManual(){
   var h = ''
-  + '<table>'
-  + '<tr><th>용어</th><th>의미</th><th>주소</th></tr>'
-  + '<tr><td><b>회사메일</b></td><td>대표(나)가 받는 메일. 기존 자동화가 PDF를 1차로 보내는 곳</td><td>prozyme-s@naver.com</td></tr>'
-  + '<tr><td><b>본사</b></td><td>발주서의 실제 수신처(현대바이오랜드)</td><td>biofood@hyundaibioland.co.kr</td></tr>'
-  + '<tr><td><b>거래처</b></td><td>노션 거래처DB의 이메일(롤업) 값이 있을 때만 발송</td><td>노션 「이메일」 롤업 값</td></tr>'
-  + '</table>'
-  + '<div class="notice">코드에서 <code>HQ_EMAIL</code> = <b>회사메일</b>, <code>BRANCH_EMAIL</code> = <b>본사</b>, '
-  + '<code>PO_TO_DEFAULT</code> = 발주서 기본 수신자(기본값 = 본사) 입니다. '
-  + 'GAS 스크립트 속성에서 <code>HQ_EMAIL</code> / <code>BRANCH_EMAIL</code> / <code>PO_TO_DEFAULT</code> 로 각각 바꿀 수 있습니다.</div>'
+  + '<div class="notice">v4.0 기준 · 실제 코드에 구현된 내용만 정리했습니다.</div>'
 
-  + '<h4>1. 발주서 — 3단계</h4>'
+  + '<table>'
+  + '<tr><th>용어</th><th>의미</th><th>값</th></tr>'
+  + '<tr><td><b>회사메일</b></td><td>대표(나)가 받는 확인용 메일</td><td>prozyme-s@naver.com</td></tr>'
+  + '<tr><td><b>본사</b></td><td>발주서 실제 수신처(현대바이오랜드)</td><td>biofood@hyundaibioland.co.kr</td></tr>'
+  + '<tr><td><b>거래처</b></td><td>노션 거래처DB 이메일(롤업) 값이 있을 때만</td><td>노션 「이메일」 롤업</td></tr>'
+  + '</table>'
+
+  + '<h4>1. 발주서 (웹앱)</h4>'
   + '<ul>'
   + '<li><b>① 목록</b> — 조건: <code>발주관리번호=비어있음</code> + <code>발주서발송여부≠체크</code> + <code>출고여부≠True</code>. '
   + '「발주」 체크 여부와 무관하게 나옵니다(웹앱이 먼저 잡기 위해).</li>'
-  + '<li><b>② 「발주 체크」</b> — 노션 <code>발주=✔</code> + <code>웹앱제어=✔</code> 를 <b>한 번의 PATCH로 동시에</b> 켭니다. '
-  + '이 순간부터 기존 발주서 자동화는 이 페이지를 <b>건너뜁니다</b> → 회사 메일이 오지 않습니다.</li>'
-  + '<li><b>③ 미리보기 → 메일 발송</b> — PDF를 눈으로 확인하고, 발송 창에서 <b>제목·본문을 그 자리에서 수정</b>한 뒤 본사로 보냅니다. '
-  + '발송 시 <code>발주서발송여부=✔</code>, <code>발주=✘</code>, <code>발주관리번호=번호</code>, <code>관리번호=번호</code>, <code>웹앱제어=✘</code>.</li>'
+  + '<li><b>② 「발주 체크」</b> — <code>발주=✔</code> + <code>웹앱제어=✔</code> 를 한 번에 켭니다. '
+  + '이 순간 기존 발주서 자동화는 이 페이지를 <b>건너뜁니다</b> → 회사메일 안 옴.</li>'
+  + '<li><b>③ 미리보기</b> — PDF를 화면에서 바로 확인(pdf.js). 이때 발송이력에 <b>PDF 저장</b> 으로 1건 기록됩니다. '
+  + '<b>번호는 소비되지 않습니다.</b></li>'
+  + '<li><b>④ 메일 발송</b> — 제목·본문 수정 후 본사로 발송. '
+  + '<code>발주서발송여부=✔</code> <code>발주=✘</code> <code>발주관리번호=번호</code> <code>관리번호=번호</code> <code>웹앱제어=✘</code>.</li>'
   + '</ul>'
-  + '<div class="warnBox">발주번호는 <b>미리보기에서 소비되지 않습니다.</b> 실제 발송 때만 확정됩니다.</div>'
 
-  + '<h4>2. 거래명세표 — 수동 경로(3단계)</h4>'
+  + '<h4>2. 거래명세표 (웹앱 · 수동 경로)</h4>'
   + '<ul>'
-  + '<li><b>① 거래처 검색</b> — 최근 <code>90일</code> 내 생성 페이지에서 거래처명/이메일로 찾습니다. 30/60/90일 조절 가능.</li>'
-  + '<li><b>② 페이지 선택 → 「명세표발행 체크」</b> — <code>명세표발행=✔</code> + <code>웹앱제어=✔</code>. '
-  + '이미 <code>명세표발송여부=✔</code> 인 건은 <b>미리보기 전용</b>입니다.</li>'
-  + '<li><b>③ 미리보기 → 메일 발송</b> — 거래처 메일이 있으면 거래처로, 없으면 본인 확인용으로만. 제목·본문 수정 가능.</li>'
+  + '<li><b>① 거래처 검색</b> — 최근 90/60/30일 또는 <b>「📅 기간 조회」</b>로 시작일~종료일 직접 지정(생성일 기준).</li>'
+  + '<li><b>② 페이지 선택 → 「명세표발행 체크」</b> — <code>명세표발행=✔</code> + <code>웹앱제어=✔</code>.</li>'
+  + '<li><b>③ 미리보기</b> — PDF 확인 + 발송이력에 <b>PDF 저장</b> 기록.</li>'
+  + '<li><b>④ 메일 발송</b> — 거래처 메일이 있으면 거래처로. 발송 시 '
+  + '<code>명세표발송여부=✔</code> <code>명세표발행=✘</code> <code>거래처발송대기=✘</code> <code>웹앱제어=✘</code>.</li>'
   + '</ul>'
-  + '<div class="notice">거래처로 보내면 기존 자동화와 동일하게 <code>명세표발송여부=✔</code> / <code>명세표발행=✘</code> / '
-  + '<code>거래처발송대기=✘</code> / <code>웹앱제어=✘</code> 로 마감됩니다.</div>'
 
-  + '<h4>3. 납품형태 자동발송 — 지금은 「기존 자동화」가 담당</h4>'
-  + '<p>거래처로 나가는 자동 메일(납품일자 기준)은 <b>기존 「택배업체 거래명세표」 스크립트</b>가 보냅니다. '
-  + '신규 스크립트에도 같은 로직이 들어 있지만 <code>AUTO_SEND_OWNER=legacy</code> 가 기본값이라 <b>절대 실행되지 않습니다</b>.</p>'
+  + '<h4>3. 납품형태 자동발송 (v4.0에서 회사메일 제거)</h4>'
+  + '<p><b>납품형태</b>가 <code>택배 발송 / 본사 발송 / 택배 제2배송처 / 본사 제2배송처</code> 인 페이지를 '
+  + '<b>납품일자</b> 기준(D-0 ~ 3일 유예)으로 처리합니다.</p>'
+  + '<ul>'
+  + '<li>거래처 이메일 <b>있음</b> → <b>거래처 단독 TO</b> 발송 (이전의 「회사TO + 거래처CC」에서 회사 제거, CC→TO 변경)</li>'
+  + '<li>거래처 이메일 <b>없음</b> → <b>아무 메일도 보내지 않음</b> (이전의 회사 단독 TO 제거)</li>'
+  + '</ul>'
+
+  + '<h4>4. 발송이력 — 상태 4종</h4>'
   + '<table>'
-  + '<tr><th>납품일자</th><th>기존 자동화 동작</th><th>메일 수신자</th></tr>'
-  + '<tr><td>미입력</td><td>거래처발송대기 ✔ (다음 실행에서 재확인)</td><td>회사메일만</td></tr>'
-  + '<tr><td>미래 날짜</td><td>PendingClientMail 예약 → 당일 발송</td><td>회사메일 + (예약분)거래처</td></tr>'
-  + '<tr><td>오늘 / 3일 이내 경과</td><td>거래처 즉시 발송</td><td>회사메일 + 거래처</td></tr>'
-  + '<tr><td>4일 이상 경과</td><td>자동 만료(취소) — 거래처 발송 안 함</td><td>회사메일만</td></tr>'
+  + '<tr><th>상태</th><th>의미</th></tr>'
+  + '<tr><td>① 전체</td><td>필터 없음</td></tr>'
+  + '<tr><td>② 발송완료</td><td>실제로 메일이 나간 건</td></tr>'
+  + '<tr><td>③ 대기</td><td>미리보기만 하고 발송 안 함 / 납품일자 미래로 예약</td></tr>'
+  + '<tr><td>④ PDF 저장</td><td>미리보기(PDF)만 만들고 발송 안 함</td></tr>'
   + '</table>'
-  + '<div class="warnBox">웹앱이 자동발송까지 맡으려면 ① 속성 <code>AUTO_SEND_OWNER=webapp</code> ② 기존 명세표 프로젝트의 '
-  + '시간 트리거 3개(<code>autoCheckStatementIssue</code>, <code>runDeliveryStatement</code>, <code>processWaitingDeliveries</code>, '
-  + '<code>sendScheduledClientEmail</code>) 해제가 <b>동시에</b> 필요합니다. 둘 중 하나만 하면 이중발송입니다. '
-  + '그래서 기본값은 <b>legacy</b> 로 잠가 두었습니다.</div>'
 
-  + '<h4>4. 「웹앱제어」 한 장치로 겹침을 막는 원리</h4>'
+  + '<h4>5. 설정 — AddressBook</h4>'
+  + '<p>표는 신규 GAS 시트의 실시간 값입니다. 행 추가·수정·삭제하면 약 1초 뒤 <b>자동 저장</b>되고, '
+  + '동시에 기존 시트 <code>AddressBook(A:C)</code> 로 <b>자동 미러링</b>됩니다. '
+  + '「저장 + 기존시트 반영」은 즉시 실행용입니다.</p>'
+
+  + '<h4>6. 기존 시트 연동 (수동 버튼은 백업용)</h4>'
   + '<ul>'
-  + '<li>웹앱이 페이지를 잡으면 <code>웹앱제어=✔</code> 가 켜집니다.</li>'
-  + '<li>기존 2개 스크립트는 <b>맨 앞에서</b> <code>웹앱제어=✔</code> 인 페이지만 조용히 건너뜁니다(추가된 가드 5줄).</li>'
-  + '<li>웹앱이 발송을 마치면 <code>웹앱제어=✘</code> 로 스스로 풉니다. 잠긴 채 남으면 「오래된 웹앱 잠금 정리」.</li>'
-  + '<li>속성이 없거나 조회에 실패하면 <b>아무것도 건너뛰지 않습니다</b>(fail-open) → 기존 자동화가 멈추지 않습니다.</li>'
+  + '<li><b>자동</b> — 관리번호 발급 시 <code>Config(A1:B1 / A2:B2)</code>, AddressBook 저장 시 <code>AddressBook(A:C)</code> 가 자동 반영.</li>'
+  + '<li><b>↓ 기존 시트 값 읽어오기</b> — 기존 시트 값을 <b>읽어서 보여만</b> 줍니다(쓰지 않음). 확인·복구용.</li>'
+  + '<li><b>↑ 기존 시트로 내보내기</b> — 신규 값을 기존 시트로 <b>강제로 밀어넣는</b> 백업용 버튼.</li>'
+  + '</ul>'
+  + '<div class="warnBox">내보내기는 <b>AddressBook(A:C) · 발주 Config(A1:B1) · 명세표 Config(A2:B2)</b> 만 씁니다. '
+  + 'PO_Template · Log · WaitingLog · PendingClientMail 은 건드리지 않습니다.</div>'
+
+  + '<h4>7. 서버 주소 / API KEY</h4>'
+  + '<ul>'
+  + '<li>GAS 주소는 <code>Index.html</code> 상단 <code>DEFAULT_GAS_URL</code> 한 곳에만 넣습니다. (설정 화면 없음)</li>'
+  + '<li>API KEY 는 <b>GAS 스크립트 속성 <code>API_KEY</code></b> 에만 둡니다. 웹앱은 키를 보내지 않습니다.</li>'
   + '</ul>'
 
-  + '<h4>5. 발송이력</h4>'
-  + '<p>종류(발주서/거래명세표) · 상태(발송완료/대기/수동완료/실패/취소) · 기간 · 검색어로 조회합니다. '
-  + '오늘 / 최근 7일 / 30일 / 이번달 버튼, 행 선택 삭제, 표시분 전체 삭제가 됩니다.</p>'
+  + '<h4>8. 메일 문구</h4>'
+  + '<p>발주서 탭 · 거래명세표 탭의 <b>「✉ 메일 문구」</b> 버튼에서 각각 편집합니다. '
+  + '치환 토큰: <code>{발주번호}</code> <code>{관리번호}</code> <code>{납품희망일}</code> <code>{거래처}</code> <code>{납품일자}</code></p>'
 
-  + '<h4>6. 관리번호 (중앙 발급)</h4>'
-  + '<p>신규 시트의 <code>Config</code>(발주 A1:B1) · <code>STMT_Config</code>(명세표 A2:B2)가 중앙 발급소입니다. '
-  + '발급 전 <b>기존 시트 Config도 함께 읽어 더 큰 값 + 1</b>, 노션에 같은 번호가 있으면 자동 +1 재시도, '
-  + '발급 후 <b>신규·기존 양쪽에 동시 기록</b>합니다.</p>'
-  + '<div class="warnBox">LockService는 같은 프로젝트 안에서만 유효합니다. 기존 자동화와 초 단위로 겹치면 번호가 1건 겹칠 수 있어 '
-  + '<b>노션 중복검사</b>로 재발급합니다. 번호가 가끔 건너뛰는 것은 정상이며 업무에 지장이 없습니다.</div>'
-
-  + '<h4>7. 매일 쓰는 순서</h4>'
+  + '<h4>9. 안전 원칙</h4>'
   + '<ul>'
-  + '<li><b>발주</b> : 발주서 탭 → 새로고침 → 선택 → 「발주 체크」 → 미리보기 → 본사 발송</li>'
-  + '<li><b>명세표</b> : 거래명세표 탭 → 거래처 검색 → 페이지 선택 → 「명세표발행 체크」 → 미리보기 → 발송</li>'
-  + '<li><b>확인</b> : 발송이력 탭 → 오늘 → 발송완료/실패 확인</li>'
-  + '</ul>'
+  + '<li>기존 2개 자동화의 트리거·PDF·노션 갱신 로직은 그대로. 추가된 것은 <b>「웹앱제어 체크면 건너뛰기」 가드</b>뿐.</li>'
+  + '<li>가드는 속성이 없거나 조회가 실패하면 <b>false</b> → 기존과 100% 동일하게 동작(fail-open).</li>'
+  + '<li>기존 시트 쓰기는 실패해도 조용히 넘어가 본 작업을 막지 않습니다.</li>'
+  + '</ul>';
 
-  + '<h4>8. 문제가 생기면</h4>'
-  + '<ul>'
-  + '<li><b>「API_KEY 불일치」</b> → ① 설정의 API KEY 와 GAS 속성 <code>API_KEY</code> 가 같은지 ② GAS 속성에 API_KEY 를 넣지 않았다면 화면의 칸도 비우기</li>'
-  + '<li><b>「GAS URL 미설정」</b> → 설정 탭에서 <code>/exec</code> 주소 확인 후 「연결 저장」</li>'
-  + '<li><b>「연결 실패」</b> → 배포 액세스가 「모든 사용자」인지 확인 → 「연결 테스트」</li>'
-  + '<li><b>「STMT_Template 시트가 없습니다」</b> → 기존 명세표 시트의 템플릿을 이 문서로 복사</li>'
-  + '<li><b>회사 메일이 또 왔다</b> → 노션에 <code>웹앱제어</code> 속성이 있는지 확인. 없으면 기존 자동화가 잡습니다.</li>'
-  + '<li><b>페이지가 잠긴 채 남았다</b> → 설정 탭 「오래된 웹앱 잠금 정리」</li>'
-  + '<li><b>PDF가 안 보임</b> → 「새창 열기」 또는 「PDF 저장」</li>'
-  + '</ul>'
+  openModal('📘 사용 매뉴얼 (v4.0)', h);
+}
 
-  + '<h4>9. 안전 원칙 (이번 버전에서 지킨 것)</h4>'
-  + '<ul>'
-  + '<li>기존 2개 자동화의 <b>트리거·메일·PDF·노션 갱신 로직은 한 줄도 바꾸지 않았습니다.</b></li>'
-  + '<li>추가된 것은 <b>「웹앱제어 체크면 건너뛰기」 가드 5곳</b> 뿐입니다.</li>'
-  + '<li>기존 시트에 쓰는 곳은 <b>딱 3곳</b>: AddressBook(A:C), 발주 Config(A1:B1), 명세표 Config(A2:B2). '
-  + '그 3곳의 쓰기도 <b>실패하면 조용히 넘어갑니다</b>(본 작업을 막지 않음).</li>'
-  + '<li>가드는 속성이 없으면 <b>아무것도 하지 않습니다</b> → 속성을 안 만들어도 기존 자동화는 그대로 돕니다.</li>'
-  + '</ul>'
+/* =====================================================================
+ * ★ v4.0 오버라이드 블록
+ *  - PDF 미리보기 : iframe(blob:) → PDF.js 캔버스 (모바일 크롬/Safari 해결)
+ *  - 서버 연결 UI 제거에 따른 안전한 대체 함수
+ *  - 메일 문구 : 각 탭 모달에서 편집
+ *  - 기간 직접 조회
+ *  - AddressBook 자동 저장
+ * ===================================================================== */
 
-  + '<div class="warnBox" style="margin-top:14px">처음 한 번만: 노션 DB에 체크박스 속성 <code>웹앱제어</code> 를 추가하세요. '
-  + '이것 하나로 두 시스템이 절대 겹치지 않습니다.</div>'
-  + '</div>';
+/* ---------- 서버 연결 (Index.html 내장 주소 사용 / 설정 UI 없음) ---------- */
+function loadConn(){
+  var u = '';
+  try { u = (localStorage.getItem(LS_URL) || '').trim(); } catch (e) {}
+  S.gasUrl = (u || DEFAULT_GAS_URL || '').trim();
+  /* ★ API Key 는 GAS 스크립트 속성(API_KEY)에만 둡니다.
+     GAS 속성에 API_KEY 를 넣었다면 아래 DEFAULT_API_KEY 상수에 같은 값을 넣으세요. */
+  S.apiKey = (typeof DEFAULT_API_KEY === 'string' ? DEFAULT_API_KEY : '').trim();
+  if ($('gasUrl')) $('gasUrl').value = S.gasUrl;
+  if ($('gasKey')) $('gasKey').value = S.apiKey;
+}
+function saveConn(){
+  toast('서버 주소는 Index.html 의 DEFAULT_GAS_URL 에 내장되어 있습니다. GitHub에서 수정 후 재배포하세요.', 4200);
+}
+function pingServer(){
+  loading(true, '연결 확인 중…');
+  api('ping', {}, function(r){
+    loading(false);
+    if (r && r.ok) { toast('연결 성공 · ' + (r.at || ''), 3200); loadState(); }
+    else { toast('연결 실패: ' + (r && r.error || '응답 없음'), 5000); }
+  });
+}
+
+/* ---------- 메일 문구 (설정 카드 → 각 탭 모달) ---------- */
+function openMailTpl(kind){
+  var m = mailDefaults();
+  var isPo = (kind === 'po');
+  var subj = isPo ? m.poSubject : m.stmtSubject;
+  var body = isPo ? m.poBody : m.stmtBody;
+  var html = ''
+    + '<div class="notice">저장하면 <b>이후 모든 발송의 기본 문구</b>가 됩니다. 발송 창에서도 그때그때 수정할 수 있습니다.</div>'
+    + '<div class="secTitle">' + (isPo ? '발주서' : '거래명세표') + ' – 제목</div>'
+    + '<div class="field"><input type="text" id="mtSubject" value="' + esc(subj) + '"></div>'
+    + '<div class="secTitle">' + (isPo ? '발주서' : '거래명세표') + ' – 본문</div>'
+    + '<div class="field"><textarea id="mtBody" rows="8">' + esc(body) + '</textarea></div>'
+    + '<div class="mini">치환 토큰: <code>{발주번호}</code> <code>{관리번호}</code> <code>{납품희망일}</code> '
+    + '<code>{거래처}</code> <code>{납품일자}</code></div>'
+    + '<div class="row" style="gap:8px;margin-top:12px">'
+    +   '<button class="btn dark" onclick="saveMailTplModal(\'' + (isPo ? 'po' : 'stmt') + '\')">저장</button>'
+    +   '<button class="btn ghost" onclick="closeModal()">닫기</button>'
+    + '</div>';
+  openModal('메일 문구 — ' + (isPo ? '발주서' : '거래명세표'), html);
+}
+
+function saveMailTplModal(kind){
+  var cur = mailDefaults();
+  var mail = {
+    poSubject:   kind === 'po'   ? $('mtSubject').value : cur.poSubject,
+    poBody:      kind === 'po'   ? $('mtBody').value    : cur.poBody,
+    stmtSubject: kind === 'stmt' ? $('mtSubject').value : cur.stmtSubject,
+    stmtBody:    kind === 'stmt' ? $('mtBody').value    : cur.stmtBody
+  };
+  loading(true, '문구 저장 중…');
+  api('saveSettings', { config: null, addressBook: null, mail: mail }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
+    S.state = S.state || {};
+    S.state.mailDefaults = mail;
+    toast('메일 문구를 저장했습니다.', 3000);
+    closeModal();
+  });
+}
+
+/* ---------- PDF 미리보기 : PDF.js 캔버스 ---------- */
+var PDFJS_VER = '3.11.174';
+var _pdfjsReady = null;
+function loadPdfJs_(){
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (_pdfjsReady) return _pdfjsReady;
+  _pdfjsReady = new Promise(function(res, rej){
+    var sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + PDFJS_VER + '/pdf.min.js';
+    sc.onload = function(){
+      try {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + PDFJS_VER + '/pdf.worker.min.js';
+      } catch (e) {}
+      res(window.pdfjsLib);
+    };
+    sc.onerror = function(){ rej(new Error('pdf.js 로드 실패')); };
+    document.head.appendChild(sc);
+  });
+  return _pdfjsReady;
+}
+
+function pdfModal(title, base64, fileName, infoHtml){
+  var bin = atob(base64 || '');
+  var arr = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  var blob = new Blob([arr], { type: 'application/pdf' });
+
+  if (S._pdfUrl) { try { URL.revokeObjectURL(S._pdfUrl); } catch (e) {} }
+  S._pdfUrl = URL.createObjectURL(blob);
+  S._pdfName = fileName || 'document.pdf';
+
+  var html = ''
+    + '<div class="row" style="gap:8px;margin-bottom:10px">'
+    +   '<button class="btn dark sm" onclick="dlPdf()">⬇ PDF 저장</button>'
+    +   '<button class="btn ghost sm" onclick="openPdfWindow()">↗ 새창 열기</button>'
+    + '</div>'
+    + '<div class="pdfWrap" id="pdfWrap"><div class="mini" style="padding:26px 0">PDF 불러오는 중…</div></div>'
+    + (infoHtml || '');
+  openModal(title, html);
+
+  loadPdfJs_().then(function(pdfjs){
+    return pdfjs.getDocument({ data: arr.slice(0) }).promise;
+  }).then(function(pdf){
+    var wrap = $('pdfWrap');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    var w = Math.max(280, wrap.clientWidth - 16);
+    var chain = Promise.resolve();
+    for (var n = 1; n <= pdf.numPages; n++) {
+      (function(num){
+        chain = chain.then(function(){
+          return pdf.getPage(num).then(function(page){
+            var base = page.getViewport({ scale: 1 });
+            var scale = Math.min(2.2, w / base.width);
+            var vp = page.getViewport({ scale: scale });
+            var cv = document.createElement('canvas');
+            cv.width = vp.width; cv.height = vp.height;
+            return page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise.then(function(){
+              var wp = $('pdfWrap'); if (wp) wp.appendChild(cv);
+            });
+          });
+        });
+      })(n);
+    }
+    return chain;
+  }).catch(function(e){
+    var wrap = $('pdfWrap');
+    if (!wrap) return;
+    wrap.outerHTML = '<iframe class="pdfFallback" src="' + S._pdfUrl + '#toolbar=1&view=FitH"></iframe>'
+      + '<div class="mini" style="margin-top:6px">브라우저 기본 뷰어로 표시 중입니다. 안 보이면 「새창 열기」를 누르세요.</div>';
+  });
+}
+
+function dlPdf(name){
+  var a = document.createElement('a');
+  a.href = S._pdfUrl; a.download = name || S._pdfName || 'document.pdf';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+/* 새창 : blob URL 을 embed 로 감싼 문서를 연다 (모바일/데스크톱 공통) */
+function openPdfWindow(){
+  var w = window.open('', '_blank');
+  if (!w) { toast('팝업이 차단되었습니다. 「PDF 저장」을 사용하세요.', 4600); return; }
+  try {
+    w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+      + '<title>' + esc(S._pdfName || 'PDF') + '</title>'
+      + '<style>html,body{margin:0;padding:0;height:100%;background:#222}'
+      + 'embed,iframe{width:100%;height:100%;border:0}</style></head><body>'
+      + '<embed type="application/pdf" src="' + S._pdfUrl + '">'
+      + '</body></html>');
+    w.document.close();
+  } catch (e) {
+    try { w.location.href = S._pdfUrl; } catch (e2) { toast('새창 열기 실패 — 「PDF 저장」을 사용하세요.', 4600); }
+  }
+}
+
+/* ---------- 기간 직접 조회 (시작일 ~ 종료일) ---------- */
+function toggleRange(){
+  var b = $('rangeBox');
+  var show = (b.style.display === 'none' || !b.style.display);
+  b.style.display = show ? 'block' : 'none';
+  if (show && !$('stmtFrom').value) {
+    var t = todayStr();
+    $('stmtFrom').value = addDays(t, -90);
+    $('stmtTo').value = t;
+  }
+}
+function applyRange(){
+  var f = $('stmtFrom').value, t = $('stmtTo').value;
+  if (!f || !t) { toast('시작일과 종료일을 모두 선택해 주세요.'); return; }
+  if (f > t) { toast('시작일이 종료일보다 늦습니다.'); return; }
+  S.rangeFrom = f; S.rangeTo = t;
+  $('stmtWindowPill').textContent = f + ' ~ ' + t;
+  $('stmtWindowTxt').textContent = f + ' ~ ' + t;
+  searchClients();
+}
+function clearRange(){
+  S.rangeFrom = ''; S.rangeTo = '';
+  $('stmtFrom').value = ''; $('stmtTo').value = '';
+  setWindowLabel();
+  toast('기간을 해제했습니다. (최근 ' + S.windowDays + '일 기준)');
+  searchClients();
+}
+
+/* ---------- AddressBook 자동 저장(1.2초 디바운스) ---------- */
+var _bookTimer = null;
+function bookAutoSave(){
+  clearTimeout(_bookTimer);
+  _bookTimer = setTimeout(function(){
+    var clean = (S.book || []).filter(function(r){ return String(r.name || '').trim() !== ''; });
+    api('saveSettings', { config: null, addressBook: clean, mail: null }, function(r){
+      if (r && r.ok) toast('AddressBook 저장 → 기존시트 반영', 1600);
+      else toast('저장 실패: ' + (r && r.error || ''), 3600);
+    });
+  }, 1200);
 }
 
 /* ---------- 해시 라우팅 ---------- */
@@ -1502,6 +1678,7 @@ else {
 applyHash();
 window.addEventListener('hashchange', applyHash);
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
