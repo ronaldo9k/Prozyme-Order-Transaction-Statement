@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14203a">
-<title>발주서·거래명세표</title>
+<title>푸로찜발주서·명세표 v9.9</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <style>
@@ -27,11 +27,12 @@
     color:#fff; padding:14px 16px 0;
     box-shadow:0 2px 12px rgba(16,32,64,.16);
   }
-  .brand{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
   .logo{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.14);
     display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden}
   .logo img{width:100%;height:100%;object-fit:cover}
-  .brand h1{font-size:16px;margin:0;font-weight:700;letter-spacing:-.3px}
+  .brand h1{font-size:16px;margin:0;font-weight:700;letter-spacing:-.3px;white-space:nowrap}
+  .hdrRow{display:flex;align-items:center;gap:8px;margin-left:auto}
   .brand .envRow{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
   .brand .env{font-size:11px;opacity:.72;text-align:right;line-height:1.3}
   .tabs{display:flex;gap:4px}
@@ -217,12 +218,14 @@
 
 <header>
   <div class="brand">
-    <div class="logo" id="logoBox">📦</div>
-    <h1 id="appTitle">푸로찜 발주·명세표</h1>
-    <div class="envRow">
-      <div class="env" id="envLine">연결 확인 중…</div>
+ /* <div class="logo" id="logoBox">📦</div> */
+    <h1 id="appTitle">푸로찜발주서·명세표</h1>
+    <div class="hdrRow">
       <button class="hdrMini" id="btnPw" onclick="openPwManager()">🔒 PW</button>
       <button class="hdrMini" id="btnManual" onclick="openManual()">📘 매뉴얼</button>
+    </div>
+    <div class="envRow">
+      <div class="env" id="envLine">연결 확인 중…</div>
     </div>
   </div>
   <div class="tabs">
@@ -367,8 +370,8 @@
       <div class="notice" id="secondSyncLine" style="margin-top:10px">제2배송처 관리 DB 상태를 불러오는 중…</div>
       <div class="row wrap" style="margin-top:6px">
         <button class="btn go sm" onclick="syncSecondDest()">🔄 노션 미러 동기화</button>
-        <button class="btn ghost sm" onclick="createSecondDb()">＋ DB 만들기</button>
-        <button class="btn ghost sm" onclick="pullSecondFromNotion()">🡐 노션 값 가져오기</button>
+        <button class="btn ghost sm" onclick="createSecondDb()">🖥 노션 사본 DB 만들기 (1회)</button>
+        <button class="btn ghost sm" onclick="pullSecondFromNotion()">⬇ 노션 값 가져오기</button>
       </div>
       <div class="notice" style="margin-top:8px">
         행을 <b>추가·삭제</b>하면 자동으로 저장됩니다(약 1초 뒤). 「저장」 버튼은 즉시 반영용입니다.
@@ -534,7 +537,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzCHbibbAQswiEOKoV1oriLyx32_odqyhGQfDkZzMXK-jVCFvLqy5Smtf2IGkZZMBEk/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbxLQDS7Qg-7W1iSnEOweeHhqvoe1TRgy7AXxAlWyU_M6n_-aaE4HahOLdEztjzTUClf/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -689,7 +692,7 @@ function loadState(){
   api('getState', {}, function(r){
     if (!r || !r.ok) { $('envLine').innerHTML = '⚠ 연결 실패'; toast('설정 로드 실패: ' + (r && r.error || ''), 4200); return; }
     S.state = r;
-    $('appTitle').textContent = r.appTitle || '푸로찜 발주·명세표';
+    $('appTitle').textContent = r.appTitle || '푸로찜발주서·명세표';
     $('envLine').innerHTML = (r.hasPoTemplate ? '' : '⚠ PO_Template 없음<br>')
       + (r.hasStmtTemplate ? '' : '⚠ STMT_Template 없음<br>')
       + (r.legacyLinked ? '기존시트 연동' : '기존시트 미설정')
@@ -1647,7 +1650,7 @@ function renderSecondSync(s){
   if (!el) return;
   if (!s || !s.dbId) {
     el.innerHTML = '<b>🚩 제2배송처 관리 DB</b> — 아직 연결되지 않았습니다. '
-      + '「＋ DB 만들기」로 노션에 <b>사본 DB</b>를 한 번만 만들어 주세요. '
+      + '「🖥 노션 사본 DB 만들기 (1회)」로 노션에 <b>사본 DB</b>를 한 번만 만들어 주세요. '
       + '(원본은 이 AddressBook 이고, 노션은 사본입니다)';
     return;
   }
@@ -1768,12 +1771,12 @@ function openManual(){
   + '</table>'
   + '<p><b>값은 어디에 저장하나요?</b> 이 시트의 <code>AddressBook</code>(A:거래처 / B:상세주소 / C:연락처) 입니다. '
   + '노션 DB 는 <b>사본(미러)</b>이라서, 자동화는 절대 노션 DB 를 읽지 않습니다 → <b>속도가 가장 빠릅니다.</b></p>'
-  + '<h4>5-3. 노션 「제2배송처 관리 DB」 사용법</h4>'
+  + '<h4>5-3. 노션 「제2배송처 관리 DB」 사용법 (사본 — 만들지 않아도 자동화는 100% 정상)</h4>'
   + '<ul>'
-  + '<li><b>＋ DB 만들기</b> — 노션 상위 페이지 ID 를 한 번만 넣으면 사본 DB 가 만들어집니다. (1회만)</li>'
+  + '<li><b>🖥 노션 사본 DB 만들기 (1회)</b> — 노션 상위 페이지 ID 를 한 번만 넣으면 사본 DB 가 만들어집니다. (1회만)</li>'
   + '<li><b>🔄 노션 미러 동기화</b> — 시트 → 노션으로 <b>바뀐 행만</b> 복사합니다. '
   + 'AddressBook 저장 시에도 자동으로 한 번 돕니다. 5분마다 자동 실행 트리거를 걸어두면 더 편합니다.</li>'
-  + '<li><b>🡐 노션 값 가져오기</b> — 노션 사본에서 고친 주소·연락처를 시트로 <b>가져옵니다</b>. '
+  + '<li><b>⬇ 노션 값 가져오기</b> — 노션 사본에서 고친 주소·연락처를 시트로 <b>가져옵니다</b>. '
   + '(자동은 시트→노션 한 방향뿐입니다. 두 방향을 자동으로 하면 서로 덮어써서 값이 사라질 수 있습니다)</li>'
   + '<li>시트에서 행을 지우면 노션 사본도 <b>보관(archive)</b> 됩니다. 완전 삭제가 아니라 되돌릴 수 있습니다.</li>'
   + '<li>노션 사본에는 <b>Relation(관계형) 속성을 만들지 않았습니다.</b> 관계형은 노션 로딩을 느리게 만듭니다.</li>'
@@ -2072,6 +2075,7 @@ else {
 applyHash();
 window.addEventListener('hashchange', applyHash);
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
