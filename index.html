@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14203a">
-<title>푸로찜 발주·명세표 v7.0</title>
+<title>푸로찜 발주·명세표 v7.1</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <style>
@@ -362,6 +362,14 @@
         <button class="btn ghost sm" onclick="loadState()">↻ 새로고침</button>
         <button class="btn dark sm" onclick="saveSettings()">저장 + 기존시트 반영</button>
       </div>
+
+      <!-- ⭐ v7.1 신규 : 제2배송처 관리 DB (노션 미러) -->
+      <div class="notice" id="secondSyncLine" style="margin-top:10px">제2배송처 관리 DB 상태를 불러오는 중…</div>
+      <div class="row wrap" style="margin-top:6px">
+        <button class="btn go sm" onclick="syncSecondDest()">🔄 노션 미러 동기화</button>
+        <button class="btn ghost sm" onclick="createSecondDb()">＋ DB 만들기</button>
+        <button class="btn ghost sm" onclick="pullSecondFromNotion()">🡐 노션 값 가져오기</button>
+      </div>
       <div class="notice" style="margin-top:8px">
         행을 <b>추가·삭제</b>하면 자동으로 저장됩니다(약 1초 뒤). 「저장」 버튼은 즉시 반영용입니다.
         <b>★ v7.0: 거래처·상세주소·연락처 값은 잠겨 있어 직접 수정할 수 없습니다</b> — 삭제 후 행 추가로만 교체하세요.
@@ -526,7 +534,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbwiRphZEWK4V62BBg59MFv5PIokfvJYa6j0MfvBrM6YVmxL2iyflRguF2KiykmXZxaI/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzCHbibbAQswiEOKoV1oriLyx32_odqyhGQfDkZzMXK-jVCFvLqy5Smtf2IGkZZMBEk/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -691,6 +699,7 @@ function loadState(){
     if (r.allowedTypes) $('allowedTypesTxt').textContent = r.allowedTypes.join(' / ');
 
     S.book = r.addressBook || [];
+    renderSecondSync(r.secondDest);
     fillSettings();
     renderBook();
     fillMailTpl();
@@ -743,6 +752,12 @@ function renderPo(){
       +    '<div class="liMeta">수량 <b>' + comma(it.qty) + '</b>'
       +      (it.dueDate ? ' · 납품요청 <b>' + esc(it.dueDate) + '</b>' : ' · <span style="color:#b3261e">납품요청일 없음</span>')
       +      (it.site ? '<br>배송지 <b>' + esc(it.site) + '</b>' : '')
+      +      (it.site && it.siteInfo && it.siteInfo.matched
+                ? '<br><span style="color:#0f9d58">↳ ' + esc(it.siteInfo.tel || '-') + ' · ' + esc(it.siteInfo.addr || '-') + '</span>'
+                : '')
+      +      (it.site && it.siteInfo && !it.siteInfo.matched
+                ? '<br><span style="color:#d93025">↳ AddressBook 에 주소·연락처가 없습니다 (추가 필요)</span>'
+                : '')
       +      (it.title ? '<br>입출고 <b>' + esc(it.title) + '</b>' : '')
       +      (it.memo ? '<br>비고 ' + esc(it.memo) : '')
       +    '</div>'
@@ -1622,6 +1637,66 @@ function pingServer(){
 /* =====================================================================
  * 6. 사용 매뉴얼 (웹앱 내장)
  * ===================================================================== */
+/* =====================================================================
+ * 5-1. ★ v7.1 신규 : 제2배송처 관리 DB (노션 "사본") 관리
+ *      · 원본 = 이 시트의 AddressBook (A:C)  ← 3개 자동화가 읽는 곳
+ *      · 노션 DB = 사람이 보고 검색하는 사본 (단방향 자동)
+ * ===================================================================== */
+function renderSecondSync(s){
+  var el = $('secondSyncLine');
+  if (!el) return;
+  if (!s || !s.dbId) {
+    el.innerHTML = '<b>🚩 제2배송처 관리 DB</b> — 아직 연결되지 않았습니다. '
+      + '「＋ DB 만들기」로 노션에 <b>사본 DB</b>를 한 번만 만들어 주세요. '
+      + '(원본은 이 AddressBook 이고, 노션은 사본입니다)';
+    return;
+  }
+  el.innerHTML = '<b>🚩 제2배송처 관리 DB</b> — 연결됨 · 최근 동기화 <b>'
+    + esc(s.lastSync || '아직 없음') + '</b>'
+    + '<br>신규 ' + (s.lastCreated || 0) + '건 · 수정 ' + (s.lastUpdated || 0)
+    + '건 · 보관 ' + (s.lastArchived || 0) + '건'
+    + (s.pending ? ' · <span style="color:#d93025">' + esc(s.pending) + '</span>' : '')
+    + '<br><span class="mini">시트 → 노션은 자동(단방향)입니다. '
+    + '노션에서 고친 값은 「🡐 노션 값 가져오기」를 눌렀을 때만 시트로 옵니다.</span>';
+}
+
+function syncSecondDest(){
+  loading(true, '노션 사본 동기화 중…');
+  api('syncSecond', {}, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5200); return; }
+    var x = r.result || {};
+    toast('동기화 완료 · 전체 ' + (x.total || 0) + ' / 신규 ' + (x.created || 0)
+      + ' / 수정 ' + (x.updated || 0) + ' / 보관 ' + (x.archived || 0)
+      + (x.pending ? ' (남은 ' + x.pending + '건은 5분 뒤 자동)' : ''), 5200);
+    renderSecondSync(r.status);
+  });
+}
+
+function createSecondDb(){
+  var pid = window.prompt('노션 상위 페이지 ID(또는 페이지 주소)를 붙여넣으세요.\n그 페이지 안에 「제2배송처 관리 DB」가 만들어집니다.');
+  if (!pid) return;
+  loading(true, '노션 DB 만드는 중…');
+  api('createSecondDb', { parentPageId: pid }, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 6000); return; }
+    toast('생성 완료 — 「🔄 노션 미러 동기화」를 눌러 값을 채우세요.', 5200);
+    renderSecondSync(r.status);
+  });
+}
+
+function pullSecondFromNotion(){
+  if (!confirm('노션 사본에서 고친 [상세주소·연락처]를 이 시트(원본)로 가져옵니다.\n계속할까요?')) return;
+  loading(true, '노션 값 가져오는 중…');
+  api('pullSecond', {}, function(r){
+    loading(false);
+    if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5200); return; }
+    toast(r.changed ? ('가져온 행 ' + r.changed + '건 — 시트에 반영했습니다.') : '바뀐 값이 없습니다.', 4200);
+    renderSecondSync(r.status);
+    loadState();
+  });
+}
+
 function openManual(){
   var h = ''
   + '<div class="notice">실제 코드에 구현된 내용만 정리했습니다.</div>'
@@ -1680,6 +1755,31 @@ function openManual(){
   + '<li><b>값 전체 보기</b> — 셀 안에서 <b>가로 스크롤</b>하면 잘린 값 끝까지 볼 수 있습니다.</li>'
   + '<li><b>복사</b> — 값을 <b>탭하면 그 값만</b> 복사되고, 행 오른쪽 <b>📋 버튼</b>은 세 값 전체를 한 번에 복사합니다(택배 발송용). 복사는 수정이 아닙니다.</li>'
   + '</ul>'
+
+  + '<h4>5-2. 🚩 제2배송지 · 제2배송처 관리 DB (v7.1 신규)</h4>'
+  + '<p><b>제2배송지</b>는 「내 거래처가 나에게 물건을 보내달라고 하는데, 받는 곳이 다른 회사일 때」 쓰는 값입니다. '
+  + '노션 입출고 DB 의 <code>제2배송지</code>(Select) 에 그 회사 이름을 고르면, 3개 자동화가 모두 그 값을 알아서 씁니다.</p>'
+  + '<table>'
+  + '<tr><th>어디에</th><th>어떻게 보이나</th></tr>'
+  + '<tr><td>① 발주서(현대바이오랜드 자동화)</td><td>PDF 배송지(P21)에 회사명, 비고(D22)에 「주소: … / 연락처: …」</td></tr>'
+  + '<tr><td>② 발주서 웹앱(이 화면)</td><td>발주 목록의 「배송지」 아래에 연락처·주소가 초록색으로 함께 표시</td></tr>'
+  + '<tr><td>③ 택배 카드(PWA)</td><td>카드 맨 위 금색 박스에 <b>납품처 · 연락처 · 주소</b> + 전체 복사 버튼</td></tr>'
+  + '<tr><td>④ Slack 알람</td><td>기존 주소 블록 아래에 「제2배송지(실제 납품처)」 블록이 추가로 표시</td></tr>'
+  + '</table>'
+  + '<p><b>값은 어디에 저장하나요?</b> 이 시트의 <code>AddressBook</code>(A:거래처 / B:상세주소 / C:연락처) 입니다. '
+  + '노션 DB 는 <b>사본(미러)</b>이라서, 자동화는 절대 노션 DB 를 읽지 않습니다 → <b>속도가 가장 빠릅니다.</b></p>'
+  + '<h4>5-3. 노션 「제2배송처 관리 DB」 사용법</h4>'
+  + '<ul>'
+  + '<li><b>＋ DB 만들기</b> — 노션 상위 페이지 ID 를 한 번만 넣으면 사본 DB 가 만들어집니다. (1회만)</li>'
+  + '<li><b>🔄 노션 미러 동기화</b> — 시트 → 노션으로 <b>바뀐 행만</b> 복사합니다. '
+  + 'AddressBook 저장 시에도 자동으로 한 번 돕니다. 5분마다 자동 실행 트리거를 걸어두면 더 편합니다.</li>'
+  + '<li><b>🡐 노션 값 가져오기</b> — 노션 사본에서 고친 주소·연락처를 시트로 <b>가져옵니다</b>. '
+  + '(자동은 시트→노션 한 방향뿐입니다. 두 방향을 자동으로 하면 서로 덮어써서 값이 사라질 수 있습니다)</li>'
+  + '<li>시트에서 행을 지우면 노션 사본도 <b>보관(archive)</b> 됩니다. 완전 삭제가 아니라 되돌릴 수 있습니다.</li>'
+  + '<li>노션 사본에는 <b>Relation(관계형) 속성을 만들지 않았습니다.</b> 관계형은 노션 로딩을 느리게 만듭니다.</li>'
+  + '</ul>'
+  + '<div class="warnBox">AddressBook 에 없는 이름을 제2배송지로 고르면, 카드에 <b>「주소 미등록」</b> 이라고 빨간 배지가 뜹니다. '
+  + '그때 AddressBook 에 그 회사를 한 줄 추가하면 즉시 연결됩니다.</div>'
 
   + '<h4>6. 기존 시트 연동 (수동 버튼은 백업용)</h4>'
   + '<ul>'
@@ -1972,6 +2072,7 @@ else {
 applyHash();
 window.addEventListener('hashchange', applyHash);
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
