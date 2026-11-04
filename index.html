@@ -526,7 +526,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyAI7N6yhCkgydZGo9HoGkEXIZzs4Ns-rcFxy1anAR3v2J8JyqKjz5nlRccs8bJLS38/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbwiRphZEWK4V62BBg59MFv5PIokfvJYa6j0MfvBrM6YVmxL2iyflRguF2KiykmXZxaI/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -1059,7 +1059,10 @@ function sendPo(){
   var html = ''
     + '<div class="secTitle">받는 사람</div>'
     + '<div class="field"><label>수신 이메일 — 기본 「본사」 (콤마로 여러 개)</label>'
-    +   '<input type="email" id="poTo" value="' + esc((S.state && (S.state.poToDefault || S.state.branchEmail)) || 'biofood@hyundaibioland.co.kr') + '"></div>'
+    +   '<div style="display:flex;gap:6px">'
+    +     '<input type="email" id="poTo" value="' + esc((S.state && (S.state.poToDefault || S.state.branchEmail)) || 'biofood@hyundaibioland.co.kr') + '">'
+    +     '<button type="button" class="delBtn" style="flex:0 0 auto;width:38px" onclick="clearPoTo()" title="수신 이메일 전체 지우기">✕</button>'
+    +   '</div></div>'
     + '<div class="mini">본사 = 발주서 실제 수신처 / 회사메일 = ' + esc((S.state && S.state.hqEmail) || 'prozyme-s@naver.com') + ' (대표 확인용)</div>'
     + '<div class="field"><label>참조(CC) — 없으면 비워두세요</label>'
     +   '<input type="text" id="poCc" value=""></div>'
@@ -1071,6 +1074,12 @@ function sendPo(){
     + '<div class="mini">이 창의 수정은 <b>이번 발송에만</b> 적용됩니다. 기본값을 바꾸려면 「설정 → 메일 기본 문구」.</div>'
     + '<button class="btn" style="margin-top:12px" onclick="confirmSendPo(\'' + esc(orderNo) + '\')">지금 발송</button>';
   openModal('발주서 메일 발송', html);
+}
+
+/* ★ 신규: 발주서 수신 이메일 한 번에 지우기 (✕ 버튼) — 테스트 주소로 바꿀 때 한 글자씩 지우는 수고 제거 */
+function clearPoTo(){
+  var el = $('poTo');
+  if (el) { el.value = ''; el.focus(); }
 }
 
 function confirmSendPo(orderNo){
@@ -1455,7 +1464,24 @@ function addBookRow(){
     /* ★ 최종 수정: 읽기전용 셀에는 input 이 없어 구 focus 라인에서 오류(행 추가 실패)가 나던 부분 제거 */
   });
 }
-function addBookRowPw(){ addBookRow(); }
+/* ★ 수정: 「+ 행 추가」 실사용 개선 — 읽기전용 잠금은 그대로 유지하면서
+   행 추가 직후 거래처·상세주소·연락처를 차례로 입력받고 bookAutoSave() 까지 호출합니다.
+   (기존에는 빈 행만 만들고 입력 방법도 없었고 자동 저장도 호출하지 않았음) */
+function addBookRowPw(){
+  requirePw(function(){
+    if (!confirm('새 행을 추가할까요?\n\n확인을 누르면 거래처·상세주소·연락처를 차례로 입력받습니다.')) {
+      toast('취소되었습니다. 추가하지 않았습니다.', 3200);
+      return;
+    }
+    var name = prompt('① 거래처명을 입력하세요:', '') || '';
+    if (!String(name).trim()) { toast('거래처명이 비어 있어 추가하지 않았습니다.', 3400); return; }
+    var addr = prompt('② 상세주소를 입력하세요:', '') || '';
+    var tel  = prompt('③ 연락처를 입력하세요:', '') || '';
+    S.book.push({ name: String(name).trim(), addr: String(addr).trim(), tel: String(tel).trim() });
+    renderBook(); bookAutoSave();
+    toast('행이 추가되고 자동 저장되었습니다.', 2600);
+  });
+}
 
 /* ★ v4.1: 웹앱 비밀번호 (중요 버튼 보호 / 기본 1234 / 서버 검증)
    성공 후 세션 만료(30분)까지 재입력 없음 */
@@ -1481,7 +1507,21 @@ function submitPw(){
   var pw = ($('pwInput') && $('pwInput').value || '').trim();
   if (!pw) { toast('비밀번호를 입력해 주세요.'); return; }
   api('checkPw', { pw: pw }, function(r){
-    if (!r || !r.ok) { toast('비밀번호가 일치하지 않습니다.', 3200); return; }
+    /* ★ 수정: 서버가 거절한 진짜 이유(API_KEY 불일치·구버전 배포 등)를 그대로 보여줍니다.
+       비밀번호 자체가 틀린 경우에만 「비밀번호가 일치하지 않습니다」 로 표시합니다. */
+    if (!r || !r.ok) {
+      var err = (r && r.error) || '';
+      if (err.indexOf('API_KEY') !== -1) {
+        toast('서버 연결 인증 실패 (API_KEY 불일치) — 비밀번호와 무관합니다.\nIndex.html 의 DEFAULT_API_KEY 를 GAS 속성 API_KEY 와 같게 하거나, GAS 속성 API_KEY 를 비우세요.', 7000);
+      } else if (err.indexOf('action') !== -1) {
+        toast('서버가 구버전 배포입니다 — 최신 Code.gs 를 「새 버전」으로 재배포 후 다시 시도하세요.', 6000);
+      } else if (err.indexOf('연결 실패') !== -1 || err.indexOf('응답') !== -1) {
+        toast('서버에 연결할 수 없습니다 — GAS 주소·네트워크를 확인하세요. (' + err + ')', 6000);
+      } else {
+        toast('비밀번호가 일치하지 않습니다.', 3200);
+      }
+      return;
+    }
     _pwUntil = Date.now() + PW_SESSION_MS;
     closeModal();
     toast('확인 완료 (30분간 재입력 없음)', 2400);
@@ -1677,7 +1717,15 @@ function openManual(){
   + '에디터에서 <code>resetAppPwTo1234</code> 함수를 1회 실행하면 <code>1234</code> 로 초기화됩니다.</li>'
   + '<li><b>「알 수 없는 action」 오류가 나올 때</b> — 서버(GAS)에 배포된 코드가 오래된 버전이라는 뜻입니다. 최신 코드를 새 버전으로 재배포하세요.</li>'
   + '</ul>'
-  + '<div class="warnBox">이 오류들은 <b>API_KEY 와 무관</b>합니다. API_KEY 불일치는 별도의 「API_KEY 불일치」 메시지로 표시됩니다.</div>';
+  + '<div class="warnBox"><b>API_KEY 와 APP_PW 는 다른 열쇠</b>입니다. API_KEY 는 웹앱↔GAS 서버 인증용, '
+  + 'APP_PW 는 행 추가·삭제·관리번호 수정 보호용입니다. API_KEY 문제는 항상 「API_KEY 불일치」 메시지로 표시되며, '
+  + '비밀번호 오류 메시지와 섞이지 않습니다.</div>'
+  + '<div class="notice"><b>오류 원인 표시 개선</b> — 이제 비밀번호 확인이 실패하면 서버가 거절한 진짜 이유가 그대로 표시됩니다. '
+  + '(「비밀번호가 일치하지 않습니다」 는 정말 비밀번호가 틀렸을 때만 나옵니다)\n'
+  + '또한 서버 주소는 Index.html 의 <code>DEFAULT_GAS_URL</code> 을 항상 우선 사용하므로, '
+  + '브라우저에 예전 주소가 저장되어 엉뚱한 서버에 접속하던 문제도 차단되었습니다.</div>'
+  + '<div class="mini">그래도 이상하면: 브라우저 주소창에서 웹앱을 연 뒤 새로고침(캐시 갱신), '
+  + '또는 브라우저 설정에서 해당 사이트 사이트 데이터 삭제 후 재접속하세요.</div>'
 
   openModal('📘 사용 매뉴얼', h);
 }
@@ -1693,9 +1741,13 @@ function openManual(){
 
 /* ---------- 서버 연결 (Index.html 내장 주소 사용 / 설정 UI 없음) ---------- */
 function loadConn(){
+  /* ★ 수정: 브라우저(localStorage)에 예전에 저장된 GAS 주소가 남아 있으면 그것을 먼저 써서
+     엉뚱한 구버전 서버에 접속하던 문제를 차단합니다.
+     서버 주소는 Index.html 상단 DEFAULT_GAS_URL 을 항상 우선 사용하고,
+     localStorage 값은 DEFAULT_GAS_URL 이 비어 있을 때만 대신 사용합니다. */
   var u = '';
   try { u = (localStorage.getItem(LS_URL) || '').trim(); } catch (e) {}
-  S.gasUrl = (u || DEFAULT_GAS_URL || '').trim();
+  S.gasUrl = (DEFAULT_GAS_URL || u || '').trim();
   /* ★ API Key 는 GAS 스크립트 속성(API_KEY)에만 둡니다.
      GAS 속성에 API_KEY 를 넣었다면 아래 DEFAULT_API_KEY 상수에 같은 값을 넣으세요. */
   S.apiKey = (typeof DEFAULT_API_KEY === 'string' ? DEFAULT_API_KEY : '').trim();
@@ -1920,6 +1972,7 @@ else {
 applyHash();
 window.addEventListener('hashchange', applyHash);
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
