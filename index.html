@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14203a">
-<title>푸로찜 발주서·거래명세표 v10.0</title>
+<title>푸로찜 발주서·거래명세표 v10.0-Opt</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <style>
@@ -112,6 +112,32 @@
   .rowActs{display:flex;gap:4px;align-items:stretch}
   .copyBtn{border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:8px;
     font-size:13px;cursor:pointer;padding:0 8px;white-space:nowrap}
+  /* ★ v10.0 신규: 주소 검색 · 수정이력 UI (기존 스타일은 손대지 않고 추가만) */
+  .addrRow{display:flex;gap:6px;align-items:stretch}
+  .addrRow input{flex:1;min-width:0}
+  .addrSearchBtn{border:1px solid var(--accent);background:#eef3ff;color:var(--accent2);border-radius:10px;
+    font-size:12px;font-weight:800;padding:0 10px;cursor:pointer;white-space:nowrap}
+  .addrSearchBtn:active{background:#e0e9ff}
+  .addrSearchBox{width:100%;height:340px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .addrResult{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fbfcfe}
+  .addrResultHead{font-size:12px;font-weight:800;color:var(--navy);margin-bottom:6px}
+  .addrLine{display:flex;align-items:center;gap:6px;margin:4px 0}
+  .addrTag{flex:0 0 auto;font-size:10.5px;font-weight:800;color:#fff;background:var(--navy2);border-radius:6px;padding:2px 6px}
+  .addrVal{flex:1;min-width:0;font-size:12.5px;color:var(--ink);word-break:break-all}
+  .miniBtn{border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:8px;
+    font-size:11px;font-weight:800;padding:4px 8px;cursor:pointer;white-space:nowrap}
+  .miniBtn.dark{background:var(--accent);border-color:var(--accent);color:#fff}
+  .logItem{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px;background:#fff}
+  .logTop{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .logKind{font-size:10.5px;font-weight:800;color:#fff;border-radius:6px;padding:2px 7px;background:#6b7a90}
+  .logKind.ok{background:var(--ok)} .logKind.bad{background:var(--bad)} .logKind.warn{background:var(--warn)}
+  .logName{font-size:12.5px;font-weight:800;color:var(--navy)}
+  .logAt{margin-left:auto;font-size:10.5px;color:var(--sub)}
+  .logBody{font-size:12px;color:var(--ink);margin-top:4px;word-break:break-all}
+  .logBefore{color:#b3261e;text-decoration:line-through}
+  .logArrow{color:var(--sub)}
+  .logAfter{color:#0f7a45;font-weight:700}
+  .logWho{font-size:10.5px;color:var(--sub);margin-top:3px}
   /* ★ v10.0 신규: 행 수정 버튼 (📋 전체복사 와 ✕ 삭제 사이) — 기존 스타일은 그대로 */
   .editBtn{border:1px solid var(--line);background:#fff;color:#0f9d58;border-radius:8px;
     font-size:13px;cursor:pointer;padding:0 8px;white-space:nowrap}
@@ -364,10 +390,16 @@
         <div style="text-align:center">No.</div><div>거래처</div><div>상세주소</div><div>연락처</div><div></div>
       </div>
       <div id="bookBody"></div>
+      <!-- ★ v10.0 신규: 작업자 이름(수정이력에 기록) -->
+      <div class="field" style="margin-top:8px">
+        <label>작업자 이름 (수정이력에 기록됩니다 · 이 브라우저에 저장됨)</label>
+        <input type="text" id="addrWho" placeholder="예: 김대리 (비워 두어도 됩니다)" maxlength="40">
+      </div>
       <div class="row wrap" style="margin-top:6px">
         <button class="btn ghost sm" onclick="addBookRowPw()">+ 행 추가</button>
         <button class="btn ghost sm" onclick="loadState()">↻ 새로고침</button>
         <button class="btn dark sm" onclick="saveSettings()">저장 + 기존시트 반영</button>
+        <button class="btn ghost sm" onclick="openAddrLog()">📜 수정이력</button>
       </div>
 
       <!-- ⭐ v7.1 신규 : 제2배송처 관리 DB (노션 미러) -->
@@ -541,7 +573,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzqkDOU98uYvd-h8WJJ9-KkIppIxeJI_wT4ZrO3DHNRUmSzqs90heuOxc1RhEv25F9l/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbw4n2DNWorxfvByPWqD-9qQwqpM_d5JNwMxS0ooQ8oHBtJh1imwAqD0KGk0gfGBfTqh/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -619,13 +651,19 @@ function api(action, extra, cb){
   body.action = action;
   body.key = S.apiKey;
 
+  /* ★ v10.0-Opt F1(안정성): 응답이 영영 오지 않아 저장 버튼/자동저장이 잠기는 현상을 막기 위해
+     22초 타임아웃을 둡니다. 타임아웃이면 jsonp 재시도 없이 바로 실패로 알립니다(중복 저장 방지). */
+  var _ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var _tm = _ac ? setTimeout(function(){ try { _ac.abort(); } catch(e){} }, 22000) : null;
+
   fetch(S.gasUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(body),
-    redirect: 'follow'
+    redirect: 'follow',
+    signal: _ac ? _ac.signal : undefined
   })
-  .then(function(r){ return r.text(); })
+  .then(function(r){ if (_tm) clearTimeout(_tm); return r.text(); })
   .then(function(txt){
     var data;
     try { data = JSON.parse(txt); }
@@ -633,6 +671,11 @@ function api(action, extra, cb){
     if (cb) cb(data);
   })
   .catch(function(err){
+    if (_tm) clearTimeout(_tm);
+    if (err && err.name === 'AbortError') {   /* ★ v10.0-Opt F1 */
+      if (cb) cb({ ok: false, error: '서버 응답 시간 초과(22초) — 잠시 후 다시 시도해 주세요.' });
+      return;
+    }
     jsonp(action, body, function(data){
       if (data) { if (cb) cb(data); }
       else { if (cb) cb({ ok: false, error: '연결 실패: ' + err.message }); }
@@ -1479,7 +1522,16 @@ function bookEdit(i){
       + '<div class="field" style="margin-top:10px"><label>① 거래처</label>'
       + '<input type="text" id="beName" value="' + esc(r.name) + '" placeholder="제2배송지 거래처명"></div>'
       + '<div class="field"><label>② 상세주소</label>'
-      + '<input type="text" id="beAddr" value="' + esc(r.addr) + '" placeholder="상세주소"></div>'
+      + '<div class="addrRow">'
+      + '<input type="text" id="beAddr" value="' + esc(r.addr) + '" placeholder="상세주소">'
+      + '<button class="addrSearchBtn" type="button" onclick="openAddrSearch()">🔍 주소 검색</button>'
+      + '</div>'
+      + '<div class="mini" style="margin-top:4px">도로명·지번 주소를 검색해 넣거나 복사할 수 있습니다. (직접 입력도 그대로 가능)</div>'
+      + '</div>'
+      + '<div id="addrSearchWrap" style="display:none;margin-top:8px">'
+      + '<div id="addrSearchBox" class="addrSearchBox"></div>'
+      + '<div id="addrSearchResult"></div>'
+      + '</div>'
       + '<div class="field"><label>③ 연락처</label>'
       + '<input type="text" id="beTel" value="' + esc(r.tel) + '" placeholder="연락처"></div>'
       + '<div class="row" style="margin-top:10px">'
@@ -1635,13 +1687,14 @@ function saveSettings(){
   var clean = S.book.filter(function(r){ return String(r.name || '').trim() !== ''; });
   /* ★ v4.0: 메일 문구는 각 탭의 「메일 문구」 모달에서 저장합니다. (설정 카드 제거) */
   loading(true, '저장 중…');
-  api('saveSettings', { config: config, addressBook: clean, mail: null }, function(r){
+  api('saveSettings', { config: config, addressBook: clean, mail: null, addrMeta: addrMeta_() }, function(r){
     loading(false);
     if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 5000); return; }
     if (S.state) { S.state.config = r.config; S.state.legacy = r.legacy; }
     S.book = clean; renderBook(); fillSettings();
     toast('저장 완료 · 배송지 ' + r.savedRows + '건'
-      + ((r.configPushed || r.addrPushed) ? ' · 기존시트 반영' : ''), 3600);
+      + ((r.configPushed || r.addrPushed) ? ' · 기존시트 반영' : '')
+      + (r.addrLogCount ? ' · 이력 ' + r.addrLogCount + '건' : ''), 3600);
   });
 }
 
@@ -2062,6 +2115,189 @@ function clearRange(){
   searchClients();
 }
 
+
+/* =====================================================================
+ * ★ v10.0 신규 : ① 주소 검색 (도로명 / 지번) — 카카오(다음) 우편번호 서비스
+ *   · API 키가 필요 없고 무료이며, 검색 결과의 도로명/지번을 각각 복사할 수 있습니다.
+ *   · 스크립트는 "🔍 주소 검색" 을 처음 누를 때 1번만 불러옵니다(lazy)
+ *     → 앱 첫 화면 로딩 속도에는 영향이 없습니다.
+ *   · 검색/복사가 실패해도 기존 수정 기능은 그대로 동작합니다(② 칸 직접 입력).
+ * ===================================================================== */
+var POSTCODE_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+var _pcState = 0;      /* 0=미로드 1=로딩중 2=완료 -1=실패 */
+var _pcCbs = [];
+var _pcData = null;
+
+function loadPostcode(cb){
+  if (window.daum && window.daum.Postcode) { cb(true); return; }
+  if (_pcState === 2) { cb(true); return; }
+  _pcCbs.push(cb);
+  if (_pcState === 1) return;
+  _pcState = 1;
+
+  var sc = document.createElement('script');
+  sc.src = POSTCODE_SRC;
+  sc.async = true;
+  sc.onload = function(){
+    _pcState = (window.daum && window.daum.Postcode) ? 2 : -1;
+    var list = _pcCbs.slice(); _pcCbs = [];
+    list.forEach(function(f){ try { f(_pcState === 2); } catch(e){} });
+  };
+  sc.onerror = function(){
+    _pcState = -1;
+    var list = _pcCbs.slice(); _pcCbs = [];
+    list.forEach(function(f){ try { f(false); } catch(e){} });
+  };
+  document.head.appendChild(sc);
+}
+
+function openAddrSearch(){
+  var wrap = $('addrSearchWrap');
+  if (!wrap) return;
+  wrap.style.display = 'block';
+  var box = $('addrSearchBox');
+
+  loadPostcode(function(ok){
+    if (!ok) {
+      if (box) box.innerHTML = '<div style="padding:14px;font-size:12.5px;color:#8a5a00">'
+        + '주소 검색 스크립트를 불러오지 못했습니다. (인터넷 연결 확인)<br>'
+        + '② 상세주소 칸에 직접 입력하시면 그대로 저장됩니다.</div>';
+      return;
+    }
+    try {
+      if (box) box.innerHTML = '';
+      new daum.Postcode({
+        oncomplete: function(data){ _pcData = data; renderAddrResult(data); },
+        width: '100%', height: '100%'
+      }).embed(box);
+    } catch (e) {
+      /* embed 가 막히는 환경(일부 인앱 브라우저)은 팝업으로 자동 대체 */
+      try {
+        new daum.Postcode({ oncomplete: function(data){ _pcData = data; renderAddrResult(data); } })
+          .open({ popupName: 'postcodePopup', popupTitle: '주소 검색' });
+      } catch (e2) {
+        if (box) box.innerHTML = '<div style="padding:14px;font-size:12.5px;color:#8a5a00">'
+          + '주소 검색 창을 열 수 없습니다. ② 상세주소 칸에 직접 입력하세요.</div>';
+      }
+    }
+  });
+}
+
+function renderAddrResult(d){
+  var el = $('addrSearchResult');
+  if (!el) return;
+  var road  = String((d && d.roadAddress)  || '').trim();
+  var jibun = String((d && d.jibunAddress) || '').trim();
+  var zone  = String((d && d.zonecode)     || '').trim();
+  var bname = String((d && d.buildingName) || '').trim();
+  var auto  = String((d && d.address)      || '').trim();
+  if (!road && !jibun) road = auto;
+
+  var h = '<div class="addrResult">'
+    + '<div class="addrResultHead">검색 결과' + (zone ? ' · 우편번호 <b>' + esc(zone) + '</b>' : '') + '</div>'
+    + (road ? '<div class="addrLine"><span class="addrTag">도로명</span>'
+        + '<span class="addrVal">' + esc(road) + '</span>'
+        + '<button class="miniBtn" type="button" onclick="addrCopy(\'road\')">복사</button>'
+        + '<button class="miniBtn dark" type="button" onclick="addrApply(\'road\')">넣기</button></div>' : '')
+    + (jibun ? '<div class="addrLine"><span class="addrTag">지번</span>'
+        + '<span class="addrVal">' + esc(jibun) + '</span>'
+        + '<button class="miniBtn" type="button" onclick="addrCopy(\'jibun\')">복사</button>'
+        + '<button class="miniBtn dark" type="button" onclick="addrApply(\'jibun\')">넣기</button></div>' : '')
+    + (bname ? '<div class="mini" style="margin-top:4px">건물명: ' + esc(bname) + '</div>' : '')
+    + '<div class="field" style="margin-top:8px"><label>상세주소(동·호수 등)</label>'
+    + '<input type="text" id="addrDetail" placeholder="예: 3층 302호"></div>'
+    + '<div class="mini">「복사」는 그 주소만 클립보드로, 「넣기」는 위 상세주소와 합쳐 ② 칸에 넣습니다. 넣은 뒤 직접 고쳐도 됩니다.</div>'
+    + '</div>';
+  el.innerHTML = h;
+}
+
+function _addrPick(kind){
+  var d = _pcData || {};
+  if (kind === 'jibun') {
+    return String(d.jibunAddress || d.autoJibunAddress || d.address || '').trim();
+  }
+  return String(d.roadAddress || d.autoRoadAddress || d.address || '').trim();
+}
+
+function addrCopy(kind){
+  var v = _addrPick(kind);
+  if (!v) { toast('복사할 주소가 없습니다.', 2200); return; }
+  copyText_(v, (kind === 'jibun' ? '지번주소' : '도로명주소'));
+}
+
+function addrApply(kind){
+  var base = _addrPick(kind);
+  if (!base) { toast('넣을 주소가 없습니다.', 2200); return; }
+  var det = String(($('addrDetail') && $('addrDetail').value) || '').trim();
+  var v = det ? (base + ' ' + det) : base;
+  var el = $('beAddr');
+  if (el) el.value = v;
+  var wrap = $('addrSearchWrap');
+  if (wrap) wrap.style.display = 'none';
+  toast('② 상세주소 칸에 넣었습니다. (저장은 「저장」 버튼)', 2600);
+  if (el) { try { el.focus(); } catch(e){} }
+}
+
+/* =====================================================================
+ * ★ v10.0 신규 : ② 수정이력 로그 (누가 · 언제 · 무엇을)
+ *   · 기록은 서버(GAS)가 "저장 전/후" 를 비교해 AddressBook_Log 시트에 남깁니다.
+ *   · 화면은 그 기록을 읽어서 보여주기만 합니다 (읽기 전용).
+ * ===================================================================== */
+var LS_WHO = 'prozyme_addr_who';
+function getAddrWho_(){
+  try { return String(localStorage.getItem(LS_WHO) || '').trim(); } catch(e){ return ''; }
+}
+function bindAddrWho(){
+  var el = $('addrWho');
+  if (!el) return;
+  el.value = getAddrWho_();
+  var save = function(){
+    try { localStorage.setItem(LS_WHO, String(el.value || '').trim()); } catch(e){}
+  };
+  el.onchange = save;
+  el.onblur = save;
+}
+function addrMeta_(){
+  var el = $('addrWho');
+  var v = el ? String(el.value || '').trim() : '';
+  if (!v) v = getAddrWho_();
+  return { who: v, from: '웹앱' };
+}
+function openAddrLog(){
+  loading(true, '수정이력 불러오는 중…');
+  api('addrLog', { limit: 300 }, function(r){
+    loading(false);
+    if (!r || !r.ok) {
+      toast('이력을 불러오지 못했습니다: ' + (r && r.error || '응답 없음') + ' — Code.gs v10.0 배포를 확인하세요.', 4600);
+      return;
+    }
+    var rows = r.rows || [];
+    var h = '<div class="notice">최근 <b>' + rows.length + '</b>건 (전체 ' + (r.total || 0) + '건) · 최신이 위입니다.<br>'
+      + '기록 시트: <b>' + esc(r.sheet || 'AddressBook_Log') + '</b> — 누가·언제·무엇을 바꿨는지 남습니다.<br>'
+      + '원본 <b>AddressBook(A:C)</b> 과는 완전히 분리되어 있어 표에는 영향이 없습니다.</div>';
+
+    if (!rows.length) {
+      h += '<div class="mini" style="padding:12px 0">아직 기록이 없습니다. ✏️ 수정 · + 행 추가 · ✕ 삭제 후에 쌓입니다.</div>';
+    } else {
+      rows.forEach(function(x){
+        var kind = String(x.kind || '');
+        var cls = (kind === '추가') ? 'ok' : (kind === '삭제' ? 'bad' : 'warn');
+        h += '<div class="logItem">'
+          + '<div class="logTop"><span class="logKind ' + cls + '">' + esc(kind) + '</span>'
+          + '<span class="logName">' + esc(x.name || '-') + '</span>'
+          + '<span class="logAt">' + esc(x.at || '') + '</span></div>'
+          + '<div class="logBody"><b>' + esc(x.field || '') + '</b> '
+          + (String(x.before || '') ? '<span class="logBefore">' + esc(x.before) + '</span> ' : '')
+          + '<span class="logArrow">→</span> '
+          + '<span class="logAfter">' + esc(String(x.after || '').length ? x.after : '(빈 값)') + '</span></div>'
+          + '<div class="logWho">👤 ' + esc(x.who || '-') + '</div>'
+          + '</div>';
+      });
+    }
+    openModal('📜 AddressBook 수정이력', h);
+  });
+}
+
 /* ---------- AddressBook 자동 저장(1.2초 디바운스) ----------
    ★ v10.0 개선: ① 동시 저장 차단(경쟁 조건 제거) ② 실패 시 1회 자동 재시도
    · 수정 중 저장이 겹치면 "느린 예전 요청"이 새 값을 덮어쓸 수 있었음 → 직렬화
@@ -2078,11 +2314,12 @@ function bookAutoSaveNow_(){
   if (_bookBusy) { _bookDirty = true; return; }   /* 저장 중이면 끝난 뒤 1회만 재전송 */
   var clean = (S.book || []).filter(function(r){ return String(r.name || '').trim() !== ''; });
   _bookBusy = true;
-  api('saveSettings', { config: null, addressBook: clean, mail: null }, function(r){
+  api('saveSettings', { config: null, addressBook: clean, mail: null, addrMeta: addrMeta_() }, function(r){
     _bookBusy = false;
     if (r && r.ok) {
       _bookRetry = 0;
-      toast('AddressBook 저장 → 기존시트 반영', 1600);
+      /* ★ v10.0-Opt F3: 성공 토스트는 "이력이 쌓인 저장" 에서만 표시 (연속 저장 시 화면 깜빡임 감소) */
+      if (r.addrLogCount) toast('AddressBook 저장 → 기존시트 반영 · 이력 ' + r.addrLogCount + '건', 1800);
     } else if (_bookRetry < 1) {
       _bookRetry += 1;
       toast('저장 실패 — 3초 뒤 한 번 더 시도합니다.', 2600);
@@ -2106,6 +2343,13 @@ function applyHash(){
 
 /* ---------- 시작 ---------- */
 loadConn();
+bindAddrWho();          /* ★ v10.0: 작업자 이름 복원 */
+/* ★ v10.0-Opt F2: 한가한 시간에 주소검색 스크립트를 미리 받아 두어 첫 클릭이 즉시 열립니다. */
+(function(){
+  var go = function(){ try { loadPostcode(function(){}); } catch(e){} };
+  if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 4000 });
+  else setTimeout(go, 2500);
+})();
 updateBar();
 setWindowLabel();
 if (S.gasUrl) { loadState(); reloadPo(); }
@@ -2116,6 +2360,7 @@ else {
 applyHash();
 window.addEventListener('hashchange', applyHash);
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
