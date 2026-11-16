@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14203a">
-<title>푸로찜 발주서·거래명세표 v9.9</title>
+<title>푸로찜 발주서·거래명세표 v10.0</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <style>
@@ -112,6 +112,10 @@
   .rowActs{display:flex;gap:4px;align-items:stretch}
   .copyBtn{border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:8px;
     font-size:13px;cursor:pointer;padding:0 8px;white-space:nowrap}
+  /* ★ v10.0 신규: 행 수정 버튼 (📋 전체복사 와 ✕ 삭제 사이) — 기존 스타일은 그대로 */
+  .editBtn{border:1px solid var(--line);background:#fff;color:#0f9d58;border-radius:8px;
+    font-size:13px;cursor:pointer;padding:0 8px;white-space:nowrap}
+  .editBtn:active{background:#e9f7ef}
   /* ★ v7.0: 관리번호(중앙 발급소) 읽기전용 + 개별 수정 버튼 */
   .cfgRow{display:flex;gap:6px;align-items:stretch}
   .cfgRow input{flex:1;min-width:0}
@@ -350,8 +354,8 @@
       <div class="mini" style="margin-bottom:8px">A열: 제2배송지 거래처 / B열: 상세주소 / C열: 연락처<br>
         이 표는 신규 GAS 시트의 <b>실시간 값</b>입니다. 아래에서 고치면 <b>기존 시트 AddressBook 에도 즉시 반영</b>됩니다.</div>
       <div class="notice" style="margin-bottom:8px">
-        <b>🔒 안내</b> — 「거래처 · 상세주소 · 연락처」 값은 <b>읽기 전용</b>입니다 (절대 클릭해서 수정할 수 없습니다).
-        유일한 수정 방법은 「✕ 삭제」 후 「+ 행 추가」 입니다. 두 버튼 모두 <b>비밀번호(기본 1234)</b> 확인 후 동작합니다.<br>
+        <b>🔒 안내</b> — 값 탭은 <b>복사 전용</b>이라 실수로 값이 바뀌지 않습니다. 수정은 행 오른쪽 <b>✏️ 수정</b> 버튼으로만 가능합니다.
+        <b>✏️ 수정 · ✕ 삭제 · + 행 추가</b> 는 모두 <b>비밀번호(기본 1234)</b> 확인 후 동작합니다.<br>
         <b>📋 복사</b> — 값이 <b>셀 안에서 가로 스크롤</b>로 끝까지 보이고, 값을 <b>탭하면 그 값만</b> 복사되며,
         행 오른쪽 <b>📋 버튼</b>은 거래처·상세주소·연락처 <b>전체를 한 번에</b> 복사합니다 (택배 발송용).<br>
         비밀번호 변경은 상단 <b>「🔒 PW」</b> 버튼에서 할 수 있습니다.
@@ -537,7 +541,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbx0zADobYfEe-Jc_p73-ohyZfOac4UGSb32MOqun4I5Ae9qhqkO5oKy-oa_YgjaRvzw/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzqkDOU98uYvd-h8WJJ9-KkIppIxeJI_wT4ZrO3DHNRUmSzqs90heuOxc1RhEv25F9l/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -1406,6 +1410,7 @@ function renderBook(){
       + '<div class="roCell" onclick="copyBookCell(' + i + ',\'tel\',\'연락처\')" title="탭하면 복사 (수정 불가)">' + esc(r.tel) + '</div>'
       + '<div class="rowActs">'
       + '<button class="copyBtn" onclick="copyBookRow(' + i + ')" title="거래처·상세주소·연락처 전체 복사">📋</button>'
+      + '<button class="editBtn" onclick="bookEdit(' + i + ')" title="이 행의 거래처·상세주소·연락처 수정">✏️</button>'
       + '<button class="delBtn" onclick="bookDel(' + i + ')">✕</button>'
       + '</div>'
       + '</div>';
@@ -1457,6 +1462,58 @@ function editCfg(id, label, type){
     if (el) el.value = v;
     toast('값이 임시 반영되었습니다. 「설정 저장 + 기존 시트 반영」 을 눌러야 최종 저장됩니다.', 4600);
   });
+}
+
+/* ★ v10.0 신규: 행 수정 — 기존 복사/삭제/추가 로직은 손대지 않고 "새 함수만" 추가합니다.
+   · 값 탭(복사)과 충돌하지 않도록 confirm/prompt 대신 모달에서 3개 값을 한 번에 편집
+   · 저장 경로는 기존과 동일한 bookAutoSave() → saveSettings(addressBook) → 시트+기존시트 반영
+   · 비밀번호 게이트도 기존 requirePw() 를 그대로 사용 (새 보안 로직 없음) */
+var _bookEditIdx = -1;
+function bookEdit(i){
+  var r = S.book[i];
+  if (!r) { toast('행을 찾을 수 없습니다. 「↻ 새로고침」 후 다시 시도해 주세요.', 3200); return; }
+  requirePw(function(){
+    _bookEditIdx = i;
+    var html = ''
+      + '<div class="notice">No.' + (i + 1) + ' 행을 수정합니다. 저장하면 약 1초 뒤 자동 저장되고 <b>기존 시트 AddressBook</b> 에도 반영됩니다.</div>'
+      + '<div class="field" style="margin-top:10px"><label>① 거래처</label>'
+      + '<input type="text" id="beName" value="' + esc(r.name) + '" placeholder="제2배송지 거래처명"></div>'
+      + '<div class="field"><label>② 상세주소</label>'
+      + '<input type="text" id="beAddr" value="' + esc(r.addr) + '" placeholder="상세주소"></div>'
+      + '<div class="field"><label>③ 연락처</label>'
+      + '<input type="text" id="beTel" value="' + esc(r.tel) + '" placeholder="연락처"></div>'
+      + '<div class="row" style="margin-top:10px">'
+      + '<button class="btn ghost" onclick="closeModal()">취소</button>'
+      + '<button class="btn dark" onclick="bookEditSave()">저장</button>'
+      + '</div>';
+    openModal('✏️ 주소 수정', html);
+    setTimeout(function(){ var el = $('beName'); if (el) el.focus(); }, 150);
+  });
+}
+function bookEditSave(){
+  var i = _bookEditIdx;
+  var r = S.book[i];
+  if (!r) { closeModal(); toast('행을 찾을 수 없습니다. 새로고침 후 다시 시도해 주세요.', 3200); return; }
+  var name = String(($('beName') && $('beName').value) || '').trim();
+  var addr = String(($('beAddr') && $('beAddr').value) || '').trim();
+  var tel  = String(($('beTel')  && $('beTel').value)  || '').trim();
+  if (!name) {
+    toast('거래처명은 비워둘 수 없습니다. 행 자체를 지우려면 ✕ 버튼을 사용하세요.', 4200);
+    return;
+  }
+  var oName = String(r.name || '').trim(), oAddr = String(r.addr || '').trim(), oTel = String(r.tel || '').trim();
+  if (name === oName && addr === oAddr && tel === oTel) {
+    closeModal(); toast('변경된 내용이 없습니다.', 2400); return;
+  }
+  /* 자동화는 "거래처명"으로 주소를 찾으므로 이름 중복은 경고 후 사용자 확인 */
+  var dup = false;
+  S.book.forEach(function(x, k){ if (k !== i && String(x.name || '').trim() === name) dup = true; });
+  if (dup && !confirm('같은 이름의 거래처가 이미 있습니다.\n\n"' + name + '"\n\n자동화가 이름으로 주소를 찾으므로 중복은 권장하지 않습니다.\n그대로 저장할까요?')) {
+    toast('취소되었습니다. 수정하지 않았습니다.', 3000); return;
+  }
+  r.name = name; r.addr = addr; r.tel = tel;
+  closeModal(); renderBook(); bookAutoSave();
+  toast('수정되었습니다. 자동 저장 중…', 2400);
 }
 
 /* ★ v4.1: 행 삭제 — 비밀번호 확인 + 최종 Confirm 후 적용 */
@@ -1775,7 +1832,7 @@ function openManual(){
   + '</table>'
   + '<h4>9. AddressBook · 제2배송지</h4>'
   + '<ul>'
-  + '<li>주소 원본은 이 시트 <code>AddressBook(A:C)</code>. 읽기 전용이며 삭제→추가로만 수정하고 약 1초 뒤 자동 저장 + 기존 시트 자동 미러링됩니다.</li>'
+  + '<li>주소 원본은 이 시트 <code>AddressBook(A:C)</code>. 값 탭은 복사 전용이고, 수정은 행의 <b>✏️</b> 버튼(비밀번호 확인)으로 합니다. 저장하면 약 1초 뒤 자동 저장 + 기존 시트 자동 미러링됩니다.</li>'
   + '<li>값을 탭하면 그 값만 복사, 행의 📋 버튼은 세 값 전체 복사(택배 발송용)입니다.</li>'
   + '<li><b>제2배송지</b> — 노션 <code>제2배송지</code>(Select) 를 고르면 발주서 PDF·웹앱 목록·택배 카드·Slack 에 실제 납품처가 함께 표시됩니다. AddressBook 에 없는 이름은 「주소 미등록」 배지가 뜹니다.</li>'
   + '<li><b>노션 사본 DB</b> — 「🖥 노션 사본 DB 만들기(1회)」 후 시트→노션 자동 단방향 동기화. 노션에서 고친 값은 「⬇ 노션 값 가져오기」로만 시트로 옵니다. (선택 기능 — 만들지 않아도 자동화는 100% 정상)</li>'
@@ -2005,17 +2062,38 @@ function clearRange(){
   searchClients();
 }
 
-/* ---------- AddressBook 자동 저장(1.2초 디바운스) ---------- */
+/* ---------- AddressBook 자동 저장(1.2초 디바운스) ----------
+   ★ v10.0 개선: ① 동시 저장 차단(경쟁 조건 제거) ② 실패 시 1회 자동 재시도
+   · 수정 중 저장이 겹치면 "느린 예전 요청"이 새 값을 덮어쓸 수 있었음 → 직렬화
+   · 저장 함수 이름/호출부는 그대로라 기존 로직 영향 없음 */
 var _bookTimer = null;
+var _bookBusy = false;
+var _bookDirty = false;
+var _bookRetry = 0;
 function bookAutoSave(){
   clearTimeout(_bookTimer);
-  _bookTimer = setTimeout(function(){
-    var clean = (S.book || []).filter(function(r){ return String(r.name || '').trim() !== ''; });
-    api('saveSettings', { config: null, addressBook: clean, mail: null }, function(r){
-      if (r && r.ok) toast('AddressBook 저장 → 기존시트 반영', 1600);
-      else toast('저장 실패: ' + (r && r.error || ''), 3600);
-    });
-  }, 1200);
+  _bookTimer = setTimeout(bookAutoSaveNow_, 1200);
+}
+function bookAutoSaveNow_(){
+  if (_bookBusy) { _bookDirty = true; return; }   /* 저장 중이면 끝난 뒤 1회만 재전송 */
+  var clean = (S.book || []).filter(function(r){ return String(r.name || '').trim() !== ''; });
+  _bookBusy = true;
+  api('saveSettings', { config: null, addressBook: clean, mail: null }, function(r){
+    _bookBusy = false;
+    if (r && r.ok) {
+      _bookRetry = 0;
+      toast('AddressBook 저장 → 기존시트 반영', 1600);
+    } else if (_bookRetry < 1) {
+      _bookRetry += 1;
+      toast('저장 실패 — 3초 뒤 한 번 더 시도합니다.', 2600);
+      _bookTimer = setTimeout(bookAutoSaveNow_, 3000);
+      return;
+    } else {
+      _bookRetry = 0;
+      toast('저장 실패: ' + (r && r.error || '응답 없음') + ' — 「저장 + 기존시트 반영」 을 눌러 주세요.', 4600);
+    }
+    if (_bookDirty) { _bookDirty = false; _bookTimer = setTimeout(bookAutoSaveNow_, 400); }
+  });
 }
 
 /* ---------- 해시 라우팅 ---------- */
@@ -2038,12 +2116,6 @@ else {
 applyHash();
 window.addEventListener('hashchange', applyHash);
 </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
