@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14203a">
-<title>푸로찜 발주서·거래명세표 v10.0-Opt</title>
+<title>푸로찜 발주서·거래명세표 v10.0</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <style>
@@ -138,6 +138,99 @@
   .logArrow{color:var(--sub)}
   .logAfter{color:#0f7a45;font-weight:700}
   .logWho{font-size:10.5px;color:var(--sub);margin-top:3px}
+  /* ===================================================================
+   * ★ v10.0 : PC(넓은 화면) 전용 레이아웃
+   *   · 1024px 미만(모바일·태블릿)은 위의 기존 규칙을 "그대로" 씁니다.
+   *   · 여기서는 넓은 화면에서만 폭·여백·글자를 조정합니다. (기능 변화 0)
+   * =================================================================== */
+  @media (min-width:1024px){
+    main{max-width:1180px;padding:22px 28px 0}
+    header{padding:18px 28px 0}
+    header > .brand,header > .tabs{max-width:1180px;margin-left:auto;margin-right:auto}
+    .brand{margin-bottom:14px}
+    .brand h1{font-size:20px}
+    .brand .env{font-size:11.5px}
+    .tabs{gap:10px}
+    .tab{font-size:14.5px;padding:12px 8px 14px;letter-spacing:-.2px}
+    .card{padding:22px 24px;margin-bottom:16px}
+    .card h2{font-size:14px;margin-bottom:14px}
+    .mini{font-size:12.5px}
+    .notice{font-size:13px}
+    .grid2{gap:12px}
+    .grid3{gap:12px}
+    /* 하단 고정 바 */
+    .bar{max-width:1180px;padding:12px 28px calc(12px + env(safe-area-inset-bottom))}
+    /* AddressBook 표 — PC 에서는 잘리지 않고 한눈에 */
+    #bookBody{overflow-x:visible}
+    .bookRow{min-width:0;gap:8px;
+      grid-template-columns:40px minmax(170px,1.05fr) minmax(340px,2.1fr) minmax(150px,.85fr) auto}
+    .roCell{font-size:13px;padding:10px 11px}
+    .rowActs{gap:6px}
+    /* 발송이력 표 */
+    .scrollX{overflow-x:visible}
+    .histTable{min-width:0;font-size:12.6px}
+    /* 미리보기 */
+    .pdfWrap,.pdfFrame{height:70vh}
+    .addrSearchBox{height:430px}
+    /* 모달 — PC 에서는 아래에서 올라오는 시트가 아니라 가운데 창 */
+    .modalBg{align-items:center;padding:24px}
+    .modal{max-width:940px;max-height:88vh;border-radius:18px}
+    .modalBody{padding:18px 22px 26px}
+    .man{font-size:13.5px}
+    /* 토스트 */
+    .toast{bottom:96px;font-size:13.5px}
+  }
+  @media (min-width:1440px){
+    main,header > .brand,header > .tabs,.bar{max-width:1320px}
+  }
+
+  /* ===== v10.0 매뉴얼 전용 스타일 (기존 스타일은 그대로 두고 추가) ===== */
+  .man{font-size:13.5px;line-height:1.75;color:var(--ink)}
+  .man .lead{background:#f7f9fd;border:1px solid #dbe6fb;border-radius:12px;padding:12px 14px;margin:0 0 14px}
+  .man .qs{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:10px 0 6px}
+  .man .qcard{border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:#fbfcfe}
+  .man .qcard b{display:block;font-size:12.5px;color:var(--navy);margin-bottom:3px}
+  .man .qcard span{font-size:11.5px;color:var(--sub);line-height:1.5}
+  .man .sec{margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)}
+  .man .sec:first-child{margin-top:0;padding-top:0;border-top:0}
+  .man h4{font-size:14px;margin:0 0 9px;color:var(--navy);font-weight:800;letter-spacing:-.2px;
+    display:flex;align-items:center;gap:8px;line-height:1.4}
+  .man h4 .n{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;
+    border-radius:7px;background:var(--navy);color:#fff;font-size:11.5px;font-weight:800;padding:0 6px}
+  .man h5{font-size:12.5px;margin:12px 0 6px;color:#2b3d5c;font-weight:800}
+  .man p{margin:0 0 8px}
+  .man ul,.man ol{margin:0 0 10px;padding-left:19px}
+  .man li{margin:3px 0}
+  .man li::marker{color:var(--accent);font-weight:800}
+  .man table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.3px;margin:8px 0 12px;
+    border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .man th{background:#f1f5fc;color:var(--navy);font-weight:800;text-align:left;padding:8px 9px;
+    border-bottom:1px solid var(--line);font-size:11.8px;white-space:nowrap}
+  .man td{padding:8px 9px;border-bottom:1px solid #eef1f6;vertical-align:top;line-height:1.6}
+  .man tr:last-child td{border-bottom:0}
+  .man tr:nth-child(even) td{background:#fcfdff}
+  .man code{background:#eef3ff;border:1px solid #dbe6fb;border-radius:5px;padding:1px 5px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.6px;color:#1d4ed8;white-space:nowrap}
+  .man .tip,.man .warn{border-radius:10px;padding:9px 11px;margin:9px 0 12px;font-size:12.4px;line-height:1.65}
+  .man .tip{background:#eefaf1;border:1px solid #cbead6;color:#0d5b34}
+  .man .warn{background:#fdf1e0;border:1px solid #f5ddb8;color:#8a5300}
+  .man .bad{background:#fdeceb;border:1px solid #f7cdc9;border-radius:10px;padding:9px 11px;
+    margin:9px 0 12px;font-size:12.4px;line-height:1.65;color:#8e2418}
+  .man .new{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:var(--ok);
+    border-radius:20px;padding:2px 7px;margin-left:5px;vertical-align:1px}
+  .man .kbd{display:inline-block;border:1px solid #c9d4e4;border-bottom-width:2px;border-radius:6px;
+    background:#f7f9fd;padding:0 6px;font-size:11.5px;font-weight:700;color:#33445e}
+  .man .steps{counter-reset:st;list-style:none;padding-left:0;margin:6px 0 12px}
+  .man .steps>li{position:relative;padding-left:30px;margin:7px 0}
+  .man .steps>li:before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;
+    width:21px;height:21px;border-radius:50%;background:#e8effe;color:var(--accent2);
+    font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .man .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .man .box{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fbfcfe}
+  .man .box b{display:block;font-size:12.5px;color:var(--navy);margin-bottom:4px}
+  .man .foot{margin-top:18px;padding-top:10px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--sub);text-align:center}
+
   /* ★ v10.0 신규: 행 수정 버튼 (📋 전체복사 와 ✕ 삭제 사이) — 기존 스타일은 그대로 */
   .editBtn{border:1px solid var(--line);background:#fff;color:#0f9d58;border-radius:8px;
     font-size:13px;cursor:pointer;padding:0 8px;white-space:nowrap}
@@ -373,7 +466,7 @@
     </div>
   </section>
 
-  <!-- ================= 3. AddressBook (★ v4.1: 설정 탭에서 독립 탭으로 이동) ================= -->
+  <!-- ================= 3. AddressBook (★ v10.0: 설정 탭에서 독립 탭으로 이동) ================= -->
   <section class="panel" id="p-addr">
     <div class="card">
       <h2><span class="dot"></span>AddressBook <span class="pill" id="bookCount">0</span></h2>
@@ -573,7 +666,7 @@ var LS_KEY = 'prozyme_api_key';
  * 비워 둔 채로도 웹앱이 바로 동작합니다.
  * localStorage 에 저장된 값이 있으면 그 값이 우선합니다.
  * ─────────────────────────────────────────────────────────── */
-var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbw4n2DNWorxfvByPWqD-9qQwqpM_d5JNwMxS0ooQ8oHBtJh1imwAqD0KGk0gfGBfTqh/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
+var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzZCjKcVCd26CUemg1JjSa5-xvs7x-6ajlUSQaFznqbw34b7zMNnHq7JyaOUfAQDkFi/exec';   /* 예: https://script.google.com/macros/s/AKfycb.../exec */
 var DEFAULT_API_KEY = '';   /* GAS 속성 API_KEY 를 쓰지 않으면 비워 두세요 */
 
 var S = {
@@ -651,7 +744,7 @@ function api(action, extra, cb){
   body.action = action;
   body.key = S.apiKey;
 
-  /* ★ v10.0-Opt F1(안정성): 응답이 영영 오지 않아 저장 버튼/자동저장이 잠기는 현상을 막기 위해
+  /* ★ v10.0 F1(안정성): 응답이 영영 오지 않아 저장 버튼/자동저장이 잠기는 현상을 막기 위해
      22초 타임아웃을 둡니다. 타임아웃이면 jsonp 재시도 없이 바로 실패로 알립니다(중복 저장 방지). */
   var _ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   var _tm = _ac ? setTimeout(function(){ try { _ac.abort(); } catch(e){} }, 22000) : null;
@@ -672,7 +765,7 @@ function api(action, extra, cb){
   })
   .catch(function(err){
     if (_tm) clearTimeout(_tm);
-    if (err && err.name === 'AbortError') {   /* ★ v10.0-Opt F1 */
+    if (err && err.name === 'AbortError') {   /* ★ v10.0 F1 */
       if (cb) cb({ ok: false, error: '서버 응답 시간 초과(22초) — 잠시 후 다시 시도해 주세요.' });
       return;
     }
@@ -1011,7 +1104,7 @@ function previewPo(){
     loading(false);
     if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 4500); return; }
     S.lastPo = r;
-    /* ★ v4.1: 연동값을 한 번에 알아볼 수 있는 HTML 확인표 추가 */
+    /* ★ v10.0: 연동값을 한 번에 알아볼 수 있는 HTML 확인표 추가 */
     var linesHtml = '';
     if (r.lines && r.lines.length) {
       linesHtml = '<div class="secTitle">품목 연동값 (PDF에 들어간 그대로)</div>'
@@ -1054,7 +1147,7 @@ function previewStmtIds(ids){
     loading(false);
     if (!r || !r.ok) { toast('실패: ' + (r && r.error || ''), 4500); return; }
     S.lastStmt = r;
-    /* ★ v4.1: 연동값을 한 번에 알아볼 수 있는 HTML 확인표 추가 */
+    /* ★ v10.0: 연동값을 한 번에 알아볼 수 있는 HTML 확인표 추가 */
     var detailHtml = '';
     if (r.detail && r.detail.length) {
       detailHtml = '<div class="secTitle">품목 연동값 (PDF에 들어간 그대로)</div>'
@@ -1086,9 +1179,9 @@ function mailDefaults(){
   var m = (S.state && S.state.mailDefaults) || {};
   return {
     poSubject: m.poSubject || '[푸로찜총판] 납품발주 요청 건 (납품희망일:{납품희망일})',
-    /* ★ v4.1: 기본 문구 변경 (요청 문구) */
+    /* ★ v10.0: 기본 문구 변경 (요청 문구) */
     poBody: m.poBody || '안녕하세요 푸로찜 총판입니다.\n\n첨부와 같이 납품 발주 요청드립니다.\n\n감사합니다.',
-    /* ★ v4.1: 명세표 제목 기본값 변경 — {거래처} 는 STMT_Template B6 실시간 연동값 */
+    /* ★ v10.0: 명세표 제목 기본값 변경 — {거래처} 는 STMT_Template B6 실시간 연동값 */
     stmtSubject: m.stmtSubject || '[푸로찜총판] {거래처} – 거래명세표 전달 건',
     stmtBody: m.stmtBody || '안녕하세요 푸로찜 총판입니다.\n\n첨부와 같이 제품 납품에 대한 거래명세표를 파일로 전달드립니다.\n\n감사합니다.'
   };
@@ -1150,7 +1243,7 @@ function clearPoTo(){
 function confirmSendPo(orderNo){
   var to = $('poTo').value.trim();
   if (!to) { toast('받는 사람을 입력해 주세요.'); return; }
-  /* ★ v4.1: 실수 발송 방지 — 최종 확인 1단계 추가 */
+  /* ★ v10.0: 실수 발송 방지 — 최종 확인 1단계 추가 */
   if (!confirm('정말 발송할까요?\n\n받는 사람: ' + to + '\n제목: ' + $('poSubject').value.trim() + '\n\n확인을 누르면 즉시 발송됩니다.')) {
     toast('취소되었습니다. 발송하지 않았습니다.', 3200);
     return;
@@ -1220,7 +1313,7 @@ function confirmSendStmt(){
   };
   if (!opts.toClient && !opts.toSelf && !opts.markDone) { toast('발송 대상을 하나 이상 선택해 주세요.'); return; }
 
-  /* ★ v4.1: 실수 발송 방지 — 최종 확인 1단계 추가 */
+  /* ★ v10.0: 실수 발송 방지 — 최종 확인 1단계 추가 */
   if (!confirm('정말 발송할까요?\n\n거래처: ' + (S.clientName || '-') + '\n제목: ' + $('stSubject').value.trim() + '\n\n확인을 누르면 즉시 발송됩니다.')) {
     toast('취소되었습니다. 발송하지 않았습니다.', 3200);
     return;
@@ -1518,6 +1611,9 @@ function bookEdit(i){
   requirePw(function(){
     _bookEditIdx = i;
     var html = ''
+      + ((r.created || r.modified)
+          ? '<div class="mini" style="margin-bottom:6px">🕒 생성 <b>' + esc(r.created || '-')
+            + '</b> · 최근 수정 <b>' + esc(r.modified || '-') + '</b></div>' : '')
       + '<div class="notice">No.' + (i + 1) + ' 행을 수정합니다. 저장하면 약 1초 뒤 자동 저장되고 <b>기존 시트 AddressBook</b> 에도 반영됩니다.</div>'
       + '<div class="field" style="margin-top:10px"><label>① 거래처</label>'
       + '<input type="text" id="beName" value="' + esc(r.name) + '" placeholder="제2배송지 거래처명"></div>'
@@ -1568,7 +1664,7 @@ function bookEditSave(){
   toast('수정되었습니다. 자동 저장 중…', 2400);
 }
 
-/* ★ v4.1: 행 삭제 — 비밀번호 확인 + 최종 Confirm 후 적용 */
+/* ★ v10.0: 행 삭제 — 비밀번호 확인 + 최종 Confirm 후 적용 */
 function bookDel(i){
   var r = S.book[i];
   if (!r) return;
@@ -1580,7 +1676,7 @@ function bookDel(i){
     S.book.splice(i, 1); renderBook(); bookAutoSave();
   });
 }
-/* ★ v4.1: 행 추가 — 비밀번호 확인 + 최종 Confirm 후 적용 */
+/* ★ v10.0: 행 추가 — 비밀번호 확인 + 최종 Confirm 후 적용 */
 function addBookRow(){
   requirePw(function(){
     if (!confirm('새 행을 추가할까요?\n\n확인을 누르면 빈 행이 추가됩니다.')) {
@@ -1610,7 +1706,7 @@ function addBookRowPw(){
   });
 }
 
-/* ★ v4.1: 웹앱 비밀번호 (중요 버튼 보호 / 기본 1234 / 서버 검증)
+/* ★ v10.0: 웹앱 비밀번호 (중요 버튼 보호 / 기본 1234 / 서버 검증)
    성공 후 세션 만료(30분)까지 재입력 없음 */
 var PW_SESSION_MS = 30 * 60 * 1000;
 var _pwUntil = 0;
@@ -1655,7 +1751,7 @@ function submitPw(){
     if (_pwCb) { var f = _pwCb; _pwCb = null; f(); }
   });
 }
-/* ★ v4.1: 「PW」 버튼 — 비밀번호 변경 */
+/* ★ v10.0: 「PW」 버튼 — 비밀번호 변경 */
 function openPwManager(){
   var html = ''
     + '<div class="notice">중요 버튼(행 추가 · 행 삭제 · 관리번호 수정) 보호용 비밀번호를 변경합니다. (숫자 4자리)</div>'
@@ -1810,100 +1906,14 @@ function pullSecondFromNotion(){
   });
 }
 
+/* =====================================================================
+ * ★ v10.0 매뉴얼 (전면 개정) — 본문은 MANUAL_HTML 한 곳에서 관리합니다.
+ *    같은 내용이 「사용 매뉴얼 v10.0.html / .pdf」 파일로도 제공됩니다.
+ * ===================================================================== */
+var MANUAL_HTML = "<div class=\"man\">\n\n  <div class=\"lead\">\n    <b>푸로찜 발주서 · 거래명세표 웹앱 — 사용 매뉴얼 v10.0</b><br>\n    이 매뉴얼은 <b>현재 배포된 v10.0 코드의 실제 동작</b>을 기준으로 작성했습니다.\n    (v4.1 표기는 모두 삭제했습니다 · 최종 갱신 2026-11-16)\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">0</span>3줄 요약</h4>\n    <div class=\"qs\">\n      <div class=\"qcard\"><b>① 자동으로 보내기</b><span>아무것도 하지 않으면 기존 자동화 A 가 납품일에 <b>거래처로만</b> 명세표를 보냅니다. 회사메일은 가지 않습니다.</span></div>\n      <div class=\"qcard\"><b>② 확인하고 보내기</b><span>웹앱에서 <b>미리보기 → 발송</b>. 이때만 「회사」 수신을 고를 수 있습니다.</span></div>\n      <div class=\"qcard\"><b>③ 주소·연락처</b><span>AddressBook 탭에서 <b>탭=복사 / 📋=전체복사 / ✏️=수정(주소검색) / ✕=삭제</b>.</span></div>\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">1</span>화면 구성 — 탭 5개</h4>\n    <table>\n      <tr><th>탭</th><th>하는 일</th><th>주요 버튼</th></tr>\n      <tr><td><b>발주서</b></td><td>현대바이오랜드로 보낼 발주 대상 목록 → PDF 미리보기 → 본사 발송</td><td>조회 · 미리보기 · 메일 발송 · 발주 체크</td></tr>\n      <tr><td><b>거래명세표</b></td><td>거래처별 출고 건 → 명세표 PDF → 거래처/회사 발송</td><td>조회 · 기간조회 · 미리보기 · 메일 발송</td></tr>\n      <tr><td><b>AddressBook</b></td><td>제2배송지 거래처의 상세주소·연락처 관리(원본)</td><td>행 추가 · ✏️ 수정 · ✕ 삭제 · 📜 수정이력</td></tr>\n      <tr><td><b>발송이력</b></td><td>지금까지 나간 메일·PDF 저장 기록 조회/삭제</td><td>조회 · 선택 삭제</td></tr>\n      <tr><td><b>설정</b></td><td>중앙 관리번호(연도·순번) 확인, 기존시트 읽기/내보내기, 메일 문구, 노션 사본</td><td>🔒 수정 · ↓읽어오기 · ↑내보내기</td></tr>\n    </table>\n    <div class=\"tip\">\n      <b>상단 고정 버튼</b> — <span class=\"kbd\">🔒 PW</span> 비밀번호 변경 ·\n      <span class=\"kbd\">📘 매뉴얼</span> 이 문서.<br>\n      중요 버튼(<b>행 추가 · 행 삭제 · ✏️ 수정 · 관리번호 수정</b>)은 <b>비밀번호(기본 1234)</b> 확인 후 동작하고,\n      한 번 확인하면 <b>30분간 다시 묻지 않습니다</b>.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">2</span>발주서 탭</h4>\n    <ol class=\"steps\">\n      <li><b>목록 조건</b> — <code>발주관리번호 없음</code> + <code>발주서발송여부 미체크</code> + <code>출고여부≠True</code> 인 페이지가 뜹니다.</li>\n      <li><b>발주 체크</b> — 노션에 <code>발주=✔</code> 와 <code>웹앱제어=✔</code> 를 <b>동시에</b> 세팅합니다. 이 순간 기존 발주 자동화는 이 페이지를 <b>건너뜁니다</b> → 회사메일이 중복으로 가지 않습니다.</li>\n      <li><b>미리보기</b> — PDF 를 화면에서 확인합니다. 이때 발송이력에 <b>PDF 저장 1건</b>이 남고 <b>관리번호는 소모되지 않습니다</b>.</li>\n      <li><b>메일 발송</b> — 본사(<code>biofood@hyundaibioland.co.kr</code>)로 발송 → <code>발주서발송여부=✔</code>, <code>웹앱제어=✘</code>, 관리번호 기록.</li>\n    </ol>\n    <div class=\"warn\"><b>주의</b> — 「발주 체크」만 하고 발송을 오래 미루면, 기존 자동화가 그 페이지를 이어받을 수 있습니다. <b>체크 → 미리보기 → 발송</b>까지 한 번에 마무리하세요.</div>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">3</span>거래명세표 탭</h4>\n    <ol class=\"steps\">\n      <li><b>조회</b> — 기본은 최근 <b>90일</b>. <b>기간 직접 조회</b>로 시작일·종료일을 지정할 수 있습니다.</li>\n      <li><b>거래처별 묶음</b> — 거래처를 누르면 그 거래처의 출고 페이지 목록이 펼쳐집니다.</li>\n      <li><b>명세표발행 체크</b> — 노션 <code>명세표발행=✔</code> + <code>웹앱제어=✔</code>(선점).</li>\n      <li><b>미리보기 → 메일 발송</b> — 수신처를 <b>거래처 / 회사</b> 중에서 고릅니다. 발송 후 <code>웹앱제어=✘</code> 로 잠금이 풀립니다.</li>\n    </ol>\n    <div class=\"tip\"><b>제2배송지</b> — 노션 <code>제2배송지</code>(Select) 값이 있으면 목록·PDF·택배 카드에 <b>실제 납품처</b>가 함께 표시됩니다. AddressBook 에 없는 이름은 <b>「주소 미등록」</b> 경고가 뜹니다.</div>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">4</span>AddressBook 탭 <span class=\"new\">v10.0 개선</span></h4>\n    <p>주소 원본은 <b>이 시트의 <code>AddressBook</code></b> 이고, 화면은 그 실시간 값을 보여줍니다. 값을 <b>탭해서 고칠 수 없고</b>(오조작 방지), 오직 <b>✏️ 수정</b> 으로만 바뀝니다.</p>\n    <h5>4-1. 행 버튼 4개</h5>\n    <table>\n      <tr><th>버튼</th><th>동작</th><th>비밀번호</th></tr>\n      <tr><td>값 탭 (거래처/상세주소/연락처)</td><td>그 값 <b>하나만</b> 클립보드로 복사</td><td>불필요</td></tr>\n      <tr><td>📋</td><td>거래처·상세주소·연락처 <b>3개 전체</b>를 한 번에 복사 (택배 발송용)</td><td>불필요</td></tr>\n      <tr><td>✏️</td><td>3개 값을 <b>수정</b> · 저장 시 약 1초 뒤 자동 저장 + 기존시트 반영</td><td><b>필요</b></td></tr>\n      <tr><td>✕</td><td>그 행 <b>삭제</b> 후 자동 저장</td><td><b>필요</b></td></tr>\n    </table>\n\n    <h5>4-2. ✏️ 안의 「🔍 주소 검색」 <span class=\"new\">신규</span></h5>\n    <ol class=\"steps\">\n      <li>행의 <b>✏️</b> → 비밀번호 확인 → 「✏️ 주소 수정」 창이 열립니다.</li>\n      <li><b>② 상세주소</b> 칸 오른쪽 <span class=\"kbd\">🔍 주소 검색</span> 을 누르면 창 안에 검색기가 펼쳐집니다.</li>\n      <li>도로명 또는 지번으로 검색 → 주소를 선택하면 <b>도로명 / 지번 / 우편번호 / 건물명</b> 이 카드로 표시됩니다.</li>\n      <li><b>복사</b> = 그 주소만 클립보드로 · <b>넣기</b> = 아래 「상세주소(동·호수)」 와 합쳐 <b>② 칸에 자동 입력</b>.</li>\n      <li>넣은 뒤 직접 고쳐도 되고, <b>검색을 쓰지 않고 직접 입력해도 기존과 똑같이 저장</b>됩니다.</li>\n    </ol>\n    <div class=\"tip\"><b>안전장치</b> — 검색 스크립트를 못 불러오거나 인앱 브라우저에서 창이 막히면 <b>안내문만</b> 표시되고, <b>수정·저장 기능은 그대로 정상</b> 동작합니다. (API 키 발급 불필요 · 무료)</div>\n\n    <h5>4-3. 📜 수정이력 — 누가 · 언제 · 무엇을 <span class=\"new\">신규</span></h5>\n    <p>저장 <b>직전 값</b>과 <b>직후 값</b>을 서버가 비교해서 <b>바뀐 것만</b> 기록합니다. 값이 그대로면 기록이 남지 않습니다.</p>\n    <table>\n      <tr><th>구분</th><th>기록 예시</th></tr>\n      <tr><td>수정</td><td><b>상세주소</b> <s>서울 … 101호</s> → <b>서울 … 302호</b></td></tr>\n      <tr><td>수정</td><td><b>거래처명</b> <s>가나상사</s> → <b>가나유통</b> (주소·연락처가 같으면 이름 변경 1건으로 정리)</td></tr>\n      <tr><td>추가</td><td><b>행 전체</b> (빈 값) → <b>이름 / 주소 / 연락처</b></td></tr>\n      <tr><td>삭제</td><td><b>행 전체</b> <b>이름 / 주소 / 연락처</b> → (빈 값)</td></tr>\n    </table>\n    <p>기록 위치는 <b>두 곳</b>이며 서로 역할이 다릅니다.</p>\n    <div class=\"grid2\">\n      <div class=\"box\"><b>① AddressBook 시트 E · F 열</b>행별 <b>생성일시(E) · 최근 수정일시(F)</b>. D 열은 <b>비워 둡니다</b>. 표를 열면 \"언제 만들고 언제 고쳤는지\"가 행마다 바로 보입니다.</div>\n      <div class=\"box\"><b>② AddressBook_Log 시트</b>누가·언제·무엇을 바꿨는지 <b>이력 전체</b>. 웹앱 <b>📜 수정이력</b> 버튼이 이 시트를 최신순으로 보여줍니다. (최대 5,000행 보관)</div>\n    </div>\n    <div class=\"warn\"><b>작업자 이름</b> — AddressBook 탭의 <b>「작업자 이름」</b> 칸에 이름을 넣어 두면 이력에 그 이름이 기록됩니다(그 브라우저에 저장됨). 비워 두면 <code>(이름 미입력)</code> 으로 남습니다. 구글 로그인 상태에서는 계정 이메일도 함께 남습니다.</div>\n    <div class=\"tip\"><b>원본 보호</b> — 이력은 <b>별도 시트</b>에 쌓이고, E·F 열은 <b>행 수를 넘지 않게</b> 자동 정리됩니다. 그래서 주소를 읽고 쓰는 <b>3개 자동화의 행 범위 계산에는 영향이 없습니다</b>. 이력 기록이 실패해도 <b>저장은 정상 처리</b>됩니다.</div>\n\n    <h5>4-4. 노션 사본(선택)</h5>\n    <ul>\n      <li><b>🖥 노션 사본 DB 만들기(1회)</b> → 노션에 「제2배송처 관리 DB」 생성.</li>\n      <li><b>🔄 노션 미러 동기화</b> — 시트 → 노션 <b>단방향 자동</b>(저장 시 자동 1회 + 5분 트리거).</li>\n      <li><b>⬇ 노션 값 가져오기</b> — 노션에서 고친 상세주소·연락처를 <b>이 버튼을 눌렀을 때만</b> 시트로 가져옵니다.</li>\n      <li>사본을 만들지 않아도 <b>자동화는 100% 정상</b> 동작합니다.</li>\n    </ul>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">5</span>발송이력 탭</h4>\n    <table>\n      <tr><th>상태</th><th>의미</th></tr>\n      <tr><td>발송완료</td><td>실제로 메일이 나간 건</td></tr>\n      <tr><td>대기</td><td>발송하지 않고 둔 건 / 납품일 미래 예약</td></tr>\n      <tr><td>PDF 저장</td><td>미리보기(PDF)만 만든 건 — 관리번호는 소모되지 않음</td></tr>\n    </table>\n    <p>기간·종류·상태로 걸러 조회할 수 있고, 체크 후 <b>선택 삭제</b>가 가능합니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">6</span>설정 탭</h4>\n    <ul>\n      <li><b>중앙 관리번호</b> — 발주서 <code>연도 / 순번</code>, 명세표 <code>날짜(YYYYMMDD) / 순번</code>. 값은 잠겨 있고 <b>🔒 수정</b> 으로만 바꿉니다.</li>\n      <li><b>↓ 읽어오기</b> — 기존 시트의 현재 값을 <b>보기용</b>으로 가져옵니다.</li>\n      <li><b>↑ 내보내기</b> — 신규 시트 값을 기존 시트로 밀어 넣는 <b>복구용 백업</b> 버튼입니다.</li>\n      <li><b>✉ 메일 문구</b> — 각 탭에서 편집. 토큰: <code>{발주번호} {관리번호} {납품희망일} {거래처} {납품일자}</code></li>\n      <li><b>서버 연결</b> — GAS 주소는 <code>index.html</code> 상단 <code>DEFAULT_GAS_URL</code> 한 곳에, API_KEY 는 GAS 스크립트 속성에 둡니다.</li>\n    </ul>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">7</span>「웹앱제어」 규칙 — 두 자동화가 부딪히지 않는 이유</h4>\n    <table>\n      <tr><th>언제</th><th>누가</th><th>동작</th></tr>\n      <tr><td>웹앱에서 발주/명세표발행 체크를 누른 순간</td><td>웹앱</td><td><b>✔ 잠금</b> — 자동화 A 접근 차단</td></tr>\n      <tr><td>웹앱에서 발송을 마친 순간</td><td>웹앱</td><td><b>✘ 해제</b></td></tr>\n      <tr><td>잠긴 페이지를 자동화 A 가 만났을 때</td><td>자동화 A</td><td>그 페이지를 <b>건너뜀</b>(로그만 남김)</td></tr>\n    </table>\n    <div class=\"tip\">속성이 없거나 조회에 실패하면 <b>풀린 것으로 간주</b>(fail-open)합니다 — 기존 자동화가 멈추지 않게 하는 안전장치입니다.</div>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">8</span>자동화 A · B 역할</h4>\n    <table>\n      <tr><th></th><th>자동화 A · 기존 거래명세표 GAS</th><th>자동화 B · 이 웹앱</th></tr>\n      <tr><td>하는 일</td><td>노션을 보다가 조건이 맞으면 <b>자동으로 명세표를 만들어 거래처에 발송</b></td><td>내가 <b>미리보기로 확인하고 수신처를 골라</b> 직접 발송</td></tr>\n      <tr><td>회사메일</td><td><b>절대 보내지 않음</b></td><td>내가 「회사」를 골랐을 때만</td></tr>\n      <tr><td>실행</td><td>시간 트리거(주기 자동)</td><td>버튼 + (선택) 웹앱 트리거</td></tr>\n      <tr><td>우선권</td><td><code>웹앱제어=✔</code> 페이지는 <b>건너뜀</b></td><td><code>웹앱제어=✔</code> 로 <b>선점</b></td></tr>\n    </table>\n    <p><b>자동화 A 처리 순서</b></p>\n    <ol>\n      <li>납품형태가 <code>택배 발송 / 본사 발송 / 택배 제2배송처 / 본사 제2배송처</code> 이고 출고여부=True 인 미발행 페이지에 <code>명세표발행=✔</code> 자동 체크</li>\n      <li>PDF 생성 → <b>납품일자</b> 판정</li>\n      <li>납품일 <b>당일·3일 이내</b> → 거래처 <b>즉시 발송</b> / <b>미래</b> → <b>예약 등록</b> / <b>없음·경과</b> → <code>거래처발송대기=✔</code></li>\n      <li>자동감시 — 대기 건을 주기적으로 재확인해 조건이 되면 발송</li>\n      <li>예약발송 — 납품일이 되면 그날 발송</li>\n    </ol>\n    <p><b>(옵션) 자동발송 대행</b> — 스크립트 속성 <code>AUTO_SEND_OWNER=webapp</code> + 웹앱 트리거 설치 시 웹앱이 대신 처리합니다. 기본값은 <code>legacy</code>(자동화 A 담당)입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">9</span>메일 규칙 (v10.0 확정)</h4>\n    <div class=\"bad\">\n      <b>①</b> 거래처 이메일 <b>있음</b> → 거래처 <b>단독 TO</b> 발송 (CC 아님 · 회사 포함 안 함)<br>\n      <b>②</b> 거래처 이메일 <b>없음</b> → <b>아무 메일도 보내지 않음</b><br>\n      <b>③</b> 회사(<code>prozyme-s@naver.com</code>)로는 자동 경로에서 <b>절대 발송하지 않음</b><br>\n      → 회사가 명세표를 받는 유일한 방법은 <b>이 웹앱에서 「회사」 수신으로 직접 보내는 것</b>입니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">10</span>시트 구조 한눈에</h4>\n    <table>\n      <tr><th>시트</th><th>열</th><th>쓰는 곳</th></tr>\n      <tr><td><code>AddressBook</code></td><td>A 거래처 / B 상세주소 / C 연락처 / <b>D 비움</b> / <b>E 생성일시</b> / <b>F 수정일시</b></td><td>웹앱(원본) · 3개 자동화가 읽음</td></tr>\n      <tr><td><code>AddressBook_Log</code></td><td>일시 / 작업자 / 구분 / 거래처 / 항목 / 변경전 / 변경후 / 비고</td><td>웹앱 저장 시 자동 기록(자동 생성)</td></tr>\n      <tr><td><code>Config</code></td><td>A1 연도 / B1 마지막순번</td><td>발주 관리번호</td></tr>\n      <tr><td><code>STMT_Config</code></td><td>A2 날짜 / B2 마지막순번</td><td>명세표 관리번호</td></tr>\n      <tr><td><code>PO_Template</code> · <code>STMT_Template</code></td><td>PDF 양식</td><td>미리보기 · 발송</td></tr>\n      <tr><td><code>PO_Log</code> · <code>STMT_Log</code></td><td>실행 로그</td><td>자동/수동 발송 기록</td></tr>\n      <tr><td><code>SendHistory</code></td><td>발송이력 12열</td><td>발송이력 탭</td></tr>\n    </table>\n    <div class=\"warn\"><b>E·F 열은 왜 D 를 비우나요?</b> 기존 표(A:C)와 시각적으로 분리해 <b>복사·눈으로 훑기</b>를 편하게 하고, 나중에 열이 늘어나도 <b>A:C 위치가 절대 흔들리지 않게</b> 하기 위해서입니다. A:C 는 지금도 <b>정확히 3열</b>만 읽고 씁니다.</div>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">11</span>스크립트 속성 (GAS → 프로젝트 설정)</h4>\n    <table>\n      <tr><th>속성</th><th>필수</th><th>설명</th></tr>\n      <tr><td><code>NOTION_TOKEN</code></td><td><b>필수</b></td><td>노션 인테그레이션 토큰</td></tr>\n      <tr><td><code>NOTION_DATABASE_ID</code></td><td>선택</td><td>입출고 DB (기본값 내장)</td></tr>\n      <tr><td><code>HQ_EMAIL</code> / <code>BRANCH_EMAIL</code> / <code>PO_TO_DEFAULT</code></td><td>선택</td><td>회사메일 / 본사 / 발주서 기본 수신자</td></tr>\n      <tr><td><code>LEGACY_PO_SS_ID</code> / <code>LEGACY_STMT_SS_ID</code></td><td>선택</td><td>기존 발주서·명세표 시트 ID(미러링)</td></tr>\n      <tr><td><code>API_KEY</code></td><td>선택</td><td>지정 시 모든 API 호출에 key 필요</td></tr>\n      <tr><td><code>APP_PW</code></td><td>선택</td><td>중요 버튼 비밀번호 (기본 1234)</td></tr>\n      <tr><td><code>AUTO_SEND_OWNER</code></td><td>선택</td><td><code>legacy</code>(기본) / <code>webapp</code></td></tr>\n      <tr><td><code>SECOND_DB_ID</code></td><td>자동</td><td>노션 사본 DB ID (생성 시 자동 저장)</td></tr>\n    </table>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">12</span>API action 목록 (GAS)</h4>\n    <table>\n      <tr><th>action</th><th>하는 일</th></tr>\n      <tr><td><code>ping</code> / <code>getState</code></td><td>연결 확인 / 전체 상태(주소록·Config·자동발송 주체)</td></tr>\n      <tr><td><code>listPo</code> / <code>listPoCandidates</code> / <code>setPoCheck</code></td><td>발주 목록 / 후보 / 발주 체크(선점)</td></tr>\n      <tr><td><code>previewPo</code> / <code>sendPo</code></td><td>발주서 PDF / 메일 발송</td></tr>\n      <tr><td><code>listStmt</code> / <code>searchClients</code> / <code>listClientPages</code> / <code>setStmtIssue</code></td><td>명세표 대상 조회 / 거래처 검색 / 페이지 목록 / 발행 체크</td></tr>\n      <tr><td><code>previewStmt</code> / <code>sendStmt</code></td><td>명세표 PDF / 메일 발송</td></tr>\n      <tr><td><code>saveSettings</code></td><td>Config + AddressBook 저장 (4번째 인자 <code>addrMeta</code>=작업자)</td></tr>\n      <tr><td><code>addrLog</code> <span class=\"new\">신규</span></td><td>AddressBook 수정이력 조회(최신순)</td></tr>\n      <tr><td><code>pullLegacy</code> / <code>pushLegacy</code></td><td>기존 시트 읽기 / 내보내기</td></tr>\n      <tr><td><code>createSecondDb</code> / <code>syncSecond</code> / <code>pullSecond</code></td><td>노션 사본 DB 생성 / 동기화 / 값 가져오기</td></tr>\n      <tr><td><code>listHistory</code> / <code>deleteHistory</code> / <code>deleteHistoryByFilter</code></td><td>발송이력 조회 / 삭제</td></tr>\n      <tr><td><code>checkPw</code> / <code>setAppPw</code> / <code>selfTest</code></td><td>비밀번호 확인 / 변경 / 자가진단</td></tr>\n    </table>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">13</span>자주 겪는 문제</h4>\n    <table>\n      <tr><th>증상</th><th>원인</th><th>해결</th></tr>\n      <tr><td>「API_KEY 불일치」</td><td>index.html 의 키 ≠ GAS 속성 API_KEY</td><td>둘을 같게 하거나 GAS 속성 API_KEY 를 <b>비웁니다</b></td></tr>\n      <tr><td>「서버가 구버전 배포」</td><td>새 코드를 저장만 하고 <b>재배포 안 함</b></td><td>배포 관리 → <b>새 버전</b>으로 배포</td></tr>\n      <tr><td>비밀번호가 계속 틀림</td><td>브라우저에 옛 세션</td><td>GAS 에서 <code>resetAppPwTo1234</code> 1회 실행</td></tr>\n      <tr><td>주소검색 창이 안 열림</td><td>사내망에서 외부 스크립트 차단</td><td>② 칸에 <b>직접 입력</b> (저장은 정상)</td></tr>\n      <tr><td>📜 수정이력이 비어 있음</td><td>값이 그대로면 기록하지 않음</td><td>값을 실제로 바꿔 저장하면 쌓입니다</td></tr>\n      <tr><td>E·F 열이 비어 있음</td><td>v10.0 이전부터 있던 행</td><td>그 행을 한 번 수정하면 이후 기록됩니다</td></tr>\n      <tr><td>PC 에서 화면이 좁아 보임</td><td>v10.0 에서 <b>넓게</b> 수정됨</td><td>강력 새로고침(<span class=\"kbd\">Ctrl</span>+<span class=\"kbd\">Shift</span>+<span class=\"kbd\">R</span>)</td></tr>\n    </table>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">14</span>업데이트 · 배포 5단계</h4>\n    <ol class=\"steps\">\n      <li>GAS 편집기 → Code.gs 전체 선택 → 새 코드 붙여넣기 → <b>저장</b></li>\n      <li><b>배포 관리 → 편집(연필) → 버전: 새 버전 → 배포</b> (기존 <code>/exec</code> 주소 유지)</li>\n      <li>GitHub → <code>index.html</code> 교체 → Commit</li>\n      <li>1~2분 뒤 접속 → <b>강력 새로고침</b> (홈화면 앱은 완전 종료 후 재실행)</li>\n      <li>제목이 <b>v10.0</b> 인지 확인 → AddressBook 탭에서 ✏️ · 📜 버튼 확인</li>\n    </ol>\n    <div class=\"bad\"><b>주의</b> — 「새 배포」로 만들면 <b>URL 이 바뀝니다</b>. 반드시 <b>기존 배포를 편집</b>해서 새 버전으로 올리세요.</div>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">15</span>안전 원칙 (v10.0 에서 지킨 것)</h4>\n    <ul>\n      <li>기존 함수·시트 위치·응답 형식은 <b>삭제·변경 없이 추가만</b> 했습니다.</li>\n      <li>AddressBook 수정이력은 <b>별도 시트</b> + <b>E·F 열</b>만 사용 → A:C 를 읽는 3개 자동화에 <b>영향 없음</b>.</li>\n      <li>이력·타임스탬프 기록은 <b>전부 try/catch</b> — 실패해도 저장·미러링은 정상 진행.</li>\n      <li>주소검색이 실패해도 <b>수정·저장은 그대로</b> 동작(직접 입력).</li>\n      <li>기존 시트 쓰기 실패는 <b>본 작업을 막지 않습니다</b>.</li>\n    </ul>\n  </div>\n\n  <div class=\"sec\">\n    <h4><span class=\"n\">16</span>버전 이력</h4>\n    <table>\n      <tr><th>버전</th><th>내용</th></tr>\n      <tr><td>v7.0</td><td>발주서 메일 제목 납품희망일 토큰 보장 · 값 잠금 · 관리번호 개별 수정</td></tr>\n      <tr><td>v7.1</td><td>제2배송지 표시 + 노션 「제2배송처 관리 DB」 사본</td></tr>\n      <tr><td><b>v10.0</b></td><td><b>①</b> ✏️ 안에 <b>주소 검색(도로명·지번·복사)</b> · <b>②</b> AddressBook <b>수정이력 로그</b>(누가·언제·무엇을: AddressBook_Log + E·F 열) · <b>③</b> <b>PC 넓은 화면 레이아웃</b> · <b>④</b> 매뉴얼 전면 개정 · <b>⑤</b> 속도/안정성 개선(시트 재오픈·중복 읽기 제거, 저장 타임아웃)</td></tr>\n    </table>\n  </div>\n\n  <div class=\"foot\">푸로찜 발주서 · 거래명세표 웹앱 v10.0 — 사용 매뉴얼 · 2026-11-16</div>\n</div>";
+
 function openManual(){
-  var h = ''
-  + '<div class="notice">📘 v4.1 기준 전면 개정판 — 두 자동화의 역할 · 처리 순서 · 메일 규칙을 실제 코드 동작 기준으로 정리했습니다.</div>'
-  + '<h4>1. 두 자동화, 한눈에 보기</h4>'
-  + '<table>'
-  + '<tr><th></th><th>자동화 A · 기존 거래명세표 GAS</th><th>자동화 B · 발주서·명세표 웹앱(이 앱)</th></tr>'
-  + '<tr><td>코드</td><td>택배업체 거래명세표 GAS Code.gs</td><td>발주서·명세표 웹앱 GAS.new + Index.html</td></tr>'
-  + '<tr><td>하는 일</td><td>노션 입출고 DB 를 보다가 조건이 맞으면 <b>명세표를 자동으로 만들어 거래처에 발송</b></td><td>내가 <b>미리보기로 확인하고 수신처를 골라 직접 발송</b></td></tr>'
-  + '<tr><td>회사메일</td><td><b>절대 보내지 않음</b> (v4.1 확정)</td><td>내가 「회사」를 선택했을 때만 보냄</td></tr>'
-  + '<tr><td>우선권</td><td>웹앱제어=✔ 페이지는 자동체크·감시·예약에서 <b>건너뜀</b></td><td>웹앱제어=✔ 를 걸어 페이지를 <b>선점(잠금)</b></td></tr>'
-  + '<tr><td>실행</td><td>시간 트리거(주기 자동)</td><td>내가 버튼으로 +(선택) 자동 트리거</td></tr>'
-  + '</table>'
-  + '<h4>2. 자동화 A — 자동 처리 순서 (설계 그대로)</h4>'
-  + '<ul>'
-  + '<li><b>① 납품형태 자동 체크</b> — 납품형태가 <code>택배 발송 / 본사 발송 / 택배 제2배송처 / 본사 제2배송처</code> 이고 출고여부=True 인 미발행 페이지에 <code>명세표발행=✔</code> 자동 체크. (웹앱제어=✔ 면 건너뜀)</li>'
-  + '<li><b>② PDF 생성 → 납품일자 판정</b> — 명세표발행=✔ 건으로 거래명세표 PDF 를 만들고 납품일자를 확인합니다.</li>'
-  + '<li><b>③ 발송 결정</b> — 납품일 <b>당일·유예(3일 이내 경과)</b> → 거래처 <b>즉시 발송</b> / 납품일 <b>미래</b> → <b>예약 등록</b>(PendingClientMail) / 납품일자 <b>없음·경과</b> → <code>거래처발송대기=✔</code></li>'
-  + '<li><b>④ 자동감시</b> — 거래처발송대기=✔ 건을 주기적으로 재확인해 조건이 되면 발송. (웹앱제어=✔ 면 건너뜀)</li>'
-  + '<li><b>⑤ 예약발송</b> — 예약건의 납품일이 되면 그날 발송. (웹앱제어=✔ 면 취소 처리)</li>'
-  + '</ul>'
-  + '<div class="warnBox"><b>v4.1 메일 규칙 — 자동화 A 전체 공통</b><br>'
-  + '① 거래처 이메일 <b>있음</b> → 거래처 <b>단독 TO</b> 발송 (CC 아님, 회사 포함 안 함)<br>'
-  + '② 거래처 이메일 <b>없음</b> → <b>아무 메일도 보내지 않음</b><br>'
-  + '③ 회사(prozyme-s@naver.com)로는 <b>어떤 경로로도 발송하지 않음</b> — 회사가 거래명세표 메일을 받는 유일한 방법은 이 웹앱에서 「회사」 수신으로 직접 보내는 것.</div>'
-  + '<h4>3. 자동화 B(웹앱) — 처리 순서</h4>'
-  + '<ul>'
-  + '<li><b>① 목록 확인</b> — 발주서 탭 / 거래명세표 탭에서 대상 페이지를 봅니다.</li>'
-  + '<li><b>② 선점</b> — 「발주 체크」/「명세표발행 체크」 버튼 → <code>웹앱제어=✔</code> 가 함께 켜져 자동화 A 가 그 페이지를 건너뜁니다.</li>'
-  + '<li><b>③ 미리보기</b> — PDF 를 화면에서 바로 확인합니다(발송 전이라 안심).</li>'
-  + '<li><b>④ 발송</b> — 받는 사람을 골라(거래처/회사) 직접 발송 → 발송 후 <code>웹앱제어=✘</code> 잠금 해제.</li>'
-  + '<li><b>(옵션) 자동발송 대행</b> — 스크립트 속성 <code>AUTO_SEND_OWNER=webapp</code> + 웹앱 트리거 설치 시 자동화 A 대신 웹앱이 ①~③을 대행합니다. 기본값 <code>legacy</code> 는 자동화 A 담당.</li>'
-  + '</ul>'
-  + '<h4>4. 「웹앱제어」 체크박스 규칙</h4>'
-  + '<table>'
-  + '<tr><th>언제</th><th>누가</th><th>동작</th></tr>'
-  + '<tr><td>웹앱에서 발주/명세표발행 체크를 누른 순간</td><td>웹앱</td><td>✔ 잠금 (자동화 A 접근 차단)</td></tr>'
-  + '<tr><td>웹앱에서 발송을 마친 순간</td><td>웹앱</td><td>✘ 해제</td></tr>'
-  + '<tr><td>잠긴 페이지를 자동화 A 가 만났을 때</td><td>자동화 A</td><td>그 페이지를 건너뜀(로그만 남김)</td></tr>'
-  + '</table>'
-  + '<div class="mini">잠금은 속성이 없거나 조회 실패 시 풀린 것으로 간주됩니다(fail-open) — 기존 자동화가 멈추지 않는 안전장치입니다.</div>'
-  + '<div class="warnBox"><b>주의 한 가지</b> — 웹앱에서 「명세표발행 체크」(잠금)까지만 하고 발송을 오래 미루면, 기존 GAS 의 발행 처리(runDeliveryStatement)가 그 페이지를 이어받아 거래처 발송을 먼저 할 수 있습니다. 잠갔다면 <b>웹앱에서 미리보기 → 발송까지 마무리</b>하거나, 자동화 A 의 runDeliveryStatement 트리거를 꺼두세요.</div>'
-  + '<h4>5. 상황별 사용법</h4>'
-  + '<ul>'
-  + '<li><b>그냥 자동으로 보내기</b> — 아무것도 하지 않으면 자동화 A 가 납품일에 거래처로 보냅니다. 회사메일은 오지 않습니다.</li>'
-  + '<li><b>보내기 전에 확인하기</b> — 웹앱 거래명세표 탭 → 페이지 선택 → 「명세표발행 체크」 → 미리보기 → 필요 시 발송(수신처 선택).</li>'
-  + '<li><b>거래처 이메일이 없을 때</b> — 자동발송 경로에서는 메일이 가지 않습니다. 웹앱 미리보기로 PDF 를 확인해 별도 전달하세요.</li>'
-  + '<li><b>납품일이 미래일 때</b> — 예약 등록 후 납품일 당일 자동 발송. 웹앱이 먼저 잠갔다면 웹앱이 처리합니다.</li>'
-  + '<li><b>발주서(현대바이오랜드)</b> — 웹앱 발주서 탭에서 미리보기 후 본사로 발송합니다.</li>'
-  + '</ul>'
-  + '<h4>6. 노션 속성 변화표 (거래명세표)</h4>'
-  + '<table>'
-  + '<tr><th>속성</th><th>자동화 A</th><th>웹앱</th></tr>'
-  + '<tr><td>명세표발행</td><td>조건 맞으면 자동 ✔ → 발송 후 ✘</td><td>체크 버튼으로 ✔ → 발송 후 ✘</td></tr>'
-  + '<tr><td>명세표발송여부</td><td>발송 완료 시 ✔</td><td>발송 완료 시 ✔</td></tr>'
-  + '<tr><td>거래처발송대기</td><td>대기 사유 발생 시 ✔ → 발송 후 ✘</td><td>동일</td></tr>'
-  + '<tr><td>웹앱제어</td><td>읽기만 함(✔면 건너뜀)</td><td>선점 ✔ → 발송 후 ✘</td></tr>'
-  + '<tr><td>명세표관리번호</td><td>발행 시 기록(이미 있으면 유지)</td><td>동일</td></tr>'
-  + '</table>'
-  + '<h4>7. 발주서 (웹앱)</h4>'
-  + '<ul>'
-  + '<li><b>① 목록</b> — 발주관리번호 없음 + 발주서발송여부 미체크 + 출고여부≠True.</li>'
-  + '<li><b>② 「발주 체크」</b> — 발주=✔ + 웹앱제어=✔ 동시 세팅 → 기존 발주 자동화는 건너뜁니다 → 회사메일 안 옴.</li>'
-  + '<li><b>③ 미리보기</b> — PDF 화면 확인(발송이력에 PDF 저장 1건 기록, 번호는 소모되지 않음).</li>'
-  + '<li><b>④ 메일 발송</b> — 본사로 발송 → 발주서발송여부=✔, 웹앱제어=✘, 관리번호 기록.</li>'
-  + '</ul>'
-  + '<h4>8. 발송이력 상태 4종</h4>'
-  + '<table>'
-  + '<tr><th>상태</th><th>의미</th></tr>'
-  + '<tr><td>전체</td><td>필터 없음</td></tr>'
-  + '<tr><td>발송완료</td><td>실제로 메일이 나간 건</td></tr>'
-  + '<tr><td>대기</td><td>발송하지 않고 둔 건 / 납품일 미래 예약</td></tr>'
-  + '<tr><td>PDF 저장</td><td>미리보기(PDF)만 만든 건</td></tr>'
-  + '</table>'
-  + '<h4>9. AddressBook · 제2배송지</h4>'
-  + '<ul>'
-  + '<li>주소 원본은 이 시트 <code>AddressBook(A:C)</code>. 값 탭은 복사 전용이고, 수정은 행의 <b>✏️</b> 버튼(비밀번호 확인)으로 합니다. 저장하면 약 1초 뒤 자동 저장 + 기존 시트 자동 미러링됩니다.</li>'
-  + '<li>값을 탭하면 그 값만 복사, 행의 📋 버튼은 세 값 전체 복사(택배 발송용)입니다.</li>'
-  + '<li><b>제2배송지</b> — 노션 <code>제2배송지</code>(Select) 를 고르면 발주서 PDF·웹앱 목록·택배 카드·Slack 에 실제 납품처가 함께 표시됩니다. AddressBook 에 없는 이름은 「주소 미등록」 배지가 뜹니다.</li>'
-  + '<li><b>노션 사본 DB</b> — 「🖥 노션 사본 DB 만들기(1회)」 후 시트→노션 자동 단방향 동기화. 노션에서 고친 값은 「⬇ 노션 값 가져오기」로만 시트로 옵니다. (선택 기능 — 만들지 않아도 자동화는 100% 정상)</li>'
-  + '</ul>'
-  + '<h4>10. 기존 시트 연동 · 메일 문구 · 키</h4>'
-  + '<ul>'
-  + '<li>관리번호 발급 시 Config, 주소 저장 시 AddressBook 이 기존 시트에 자동 반영됩니다. 「↓읽어오기」는 보기용, 「↑내보내기」는 복구용 백업 버튼입니다.</li>'
-  + '<li>메일 문구는 각 탭 「✉ 메일 문구」에서 편집. 토큰: <code>{발주번호} {관리번호} {납품희망일} {거래처} {납품일자}</code></li>'
-  + '<li>GAS 주소는 Index.html 상단 <code>DEFAULT_GAS_URL</code> 한 곳에만 넣고, API_KEY 는 스크립트 속성에 둡니다.</li>'
-  + '<li>비밀번호(🔒 PW) 기본 <code>1234</code>, 확인 후 30분간 재입력 없음. 초기화는 GAS 에서 <code>resetAppPwTo1234</code> 1회 실행.</li>'
-  + '</ul>'
-  + '<h4>11. 안전 원칙</h4>'
-  + '<ul>'
-  + '<li>자동화 A 의 트리거·PDF·노션 갱신 로직은 그대로입니다. 웹앱이 추가한 것은 「웹앱제어=✔면 건너뛰기」 가드뿐입니다.</li>'
-  + '<li>v4.1 의 동작 변경은 딱 한 곳 — 자동화 A 의 1차 회사메일 스위치를 false 로 확정한 것. 거래처 발송·예약·감시·노션 갱신은 그대로입니다.</li>'
-  + '<li>기존 시트 쓰기는 실패해도 본 작업을 막지 않습니다.</li>'
-  + '</ul>'
-  openModal('📘 사용 매뉴얼 (v4.1)', h);
+  openModal('📘 사용 매뉴얼 (v10.0)', MANUAL_HTML);
 }
 
 /* =====================================================================
@@ -2004,7 +2014,7 @@ function loadPdfJs_(){
   return _pdfjsReady;
 }
 
-/* ★ v4.1: 발주서·명세표 공통 — 미리보기 화질 개선 + 연동값 HTML 확인표
+/* ★ v10.0: 발주서·명세표 공통 — 미리보기 화질 개선 + 연동값 HTML 확인표
    기존 v4.0 pdfModal 을 그대로 두고 새 함수로 교체 (원본 보존용 주석 아래 유지) */
 function pdfModal(title, base64, fileName, infoHtml){
   var bin = atob(base64 || '');
@@ -2032,7 +2042,7 @@ function pdfModal(title, base64, fileName, infoHtml){
     if (!wrap) return;
     wrap.innerHTML = '';
     var w = Math.max(280, wrap.clientWidth - 16);
-    /* ★ v4.1 화질 개선: devicePixelRatio 만큼 고해상도 렌더 후 CSS로 축소 표시 */
+    /* ★ v10.0 화질 개선: devicePixelRatio 만큼 고해상도 렌더 후 CSS로 축소 표시 */
     var dpr = Math.max(2, window.devicePixelRatio || 1);
     var chain = Promise.resolve();
     for (var n = 1; n <= pdf.numPages; n++) {
@@ -2318,7 +2328,7 @@ function bookAutoSaveNow_(){
     _bookBusy = false;
     if (r && r.ok) {
       _bookRetry = 0;
-      /* ★ v10.0-Opt F3: 성공 토스트는 "이력이 쌓인 저장" 에서만 표시 (연속 저장 시 화면 깜빡임 감소) */
+      /* ★ v10.0 F3: 성공 토스트는 "이력이 쌓인 저장" 에서만 표시 (연속 저장 시 화면 깜빡임 감소) */
       if (r.addrLogCount) toast('AddressBook 저장 → 기존시트 반영 · 이력 ' + r.addrLogCount + '건', 1800);
     } else if (_bookRetry < 1) {
       _bookRetry += 1;
@@ -2344,7 +2354,7 @@ function applyHash(){
 /* ---------- 시작 ---------- */
 loadConn();
 bindAddrWho();          /* ★ v10.0: 작업자 이름 복원 */
-/* ★ v10.0-Opt F2: 한가한 시간에 주소검색 스크립트를 미리 받아 두어 첫 클릭이 즉시 열립니다. */
+/* ★ v10.0 F2: 한가한 시간에 주소검색 스크립트를 미리 받아 두어 첫 클릭이 즉시 열립니다. */
 (function(){
   var go = function(){ try { loadPostcode(function(){}); } catch(e){} };
   if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 4000 });
